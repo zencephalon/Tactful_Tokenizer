@@ -50,9 +50,6 @@ module WordTokenizer
     ];
 
     def tokenize(s)
-        @@tokenize_regexps.each do |rules|
-            s.gsub!(rules[0], rules[1])
-        end
-        s
+        @@tokenize_regexps.inject(s) {|result, rules| result.gsub(rules[0], rules[1])}
     end
 end

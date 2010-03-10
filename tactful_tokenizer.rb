@@ -1,14 +1,23 @@
 require "word_tokenizer.rb"
 require 'redis'
+require 'andand'
 include WordTokenizer
 
 # TODO: More documentation.
-# TODO: Link up with Marshal to load data models.
 # TODO: Test coverage.
 ####### Performance TODOs.
 # TODO: Use string interpolation.
-# TODO: Use destructive methods were possible.
+# TODO: Use destructive methods where possible.
 # TODO: Use an array for frags instead of a linked list.
+
+String.class_eval do
+    def is_alphabetic?
+        return !/[^A-Z]/i.match(self)
+    end
+    def is_upper_case?
+        return !/[^A-Z]/.match(self)
+    end
+end
 
 module TactfulTokenizer
     # Removes annotations from words.
@@ -23,14 +32,6 @@ module TactfulTokenizer
             .gsub('--', ' ')
     end
 
-    class String
-        def is_alphabetic?
-            return !/[^A-Z]/i.match(self)
-        end
-        def is_upper_case?
-            return !/[^A-Z]/.match(self)
-        end
-    end
 
     # Finds the features in a text fragment of the form:
     # ... w1. (sb?) w2 ...
@@ -63,20 +64,20 @@ module TactfulTokenizer
         len1 = [10, c1.gsub(/\W/, '').length].min
 
         if not c2.empty? and c1.gsub('.', '').is_alphabetic? 
-            feats['w1length'] = len1.to_s
+            feats['w1length'] = len1
             begin
-                feats['w1abbr'] = Math.log(1 + model.non_abbrs[c1.chop()]).to_i.to_s
+                feats['w1abbr'] = Math.log(1 + model.non_abbrs(c1.chop())).to_i
             rescue Exception => e
-                feats['w1abbr'] = '0'
+                feats['w1abbr'] = 0
             end
         end
 
         if not c2.empty? and c2.gsub('.', '').is_alphabetic?
-            feats['w2cap'] = c2[0].is_upper_case?.to_s
+            feats['w2cap'] = c2[0].is_upper_case?.to_s.capitalize
             begin
-                feats['w2lower'] = Math.log(1 + model.lower_words[c2.downcase]).to_i.to_s
+                feats['w2lower'] = Math.log(1 + model.lower_words(c2.downcase)).to_i
             rescue Exception => e
-                feats['w2lower'] = '0'
+                feats['w2lower'] = 0
             end
         end
         feats
@@ -133,13 +134,13 @@ module TactfulTokenizer
         end
 
         def classify_single(frag)
-            probs = {}
-            probs[0] = @feats[[0, '<prior>']] ** 4
-            probs[1] = @feats[[1, '<prior>']] ** 4
+            probs = []
+            probs[0] = feats([0, '<prior>']) ** 4
+            probs[1] = feats([1, '<prior>']) ** 4
 
-            probs.each_key do |label|
+            for label in (0..1) do
                 frag.features.each_pair do |feat, val|
-                    probs[label] *= (@feats[[label,feat+"_"+val]] or 1)
+                    probs[label] *= (feats([label,feat.to_s+"_"+val.to_s]) or 1)
                 end
             end
     
@@ -148,13 +149,13 @@ module TactfulTokenizer
         end
 
         def feats(arr)
-            @r["feats,#{arr[0]},#{arr[1]}"]
+            @r["feats,#{arr[0]},#{arr[1]}"].andand.to_f
         end
         def lower_words(arr)
-            @r["lower_words,#{arr}"]
+            @r["lower_words,#{arr}"].andand.to_f
         end
         def non_abbrs(arr)
-            @r["non_abbrs,#{arr}"]
+            @r["non_abbrs,#{arr}"].andand.to_f
         end
 
         def classify(doc)
@@ -190,7 +191,7 @@ module TactfulTokenizer
                 if frag.pred > thresh or frag.ends_seg
                     break if frag.orig.nil?
                     sents.push(sent.join(' '))
-                    sent []
+                    sent = []
                 end
                 frag = frag.next
             end
@@ -212,7 +213,7 @@ module TactfulTokenizer
     end
 
     def normalize(counter)
-        total = counter.inject(0) { |s, i| s += i }.to_f
+        total = (counter.inject(0) { |s, i| s += i }).to_f
         counter.map! { |value| value / total }
     end
     

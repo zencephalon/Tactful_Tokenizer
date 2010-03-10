@@ -1,4 +1,4 @@
-module Word_Tokenizer
+module WordTokenizer
     @@tokenize_regexps = [
         # Uniform Quotes
         [/''/, '"'],

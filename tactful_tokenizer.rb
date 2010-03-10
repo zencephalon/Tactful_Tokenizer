@@ -1,3 +1,14 @@
+require "word_tokenizer.rb"
+include WordTokenizer
+
+# TODO: More documentation.
+# TODO: Link up with Marshal to load data models.
+# TODO: Test coverage.
+####### Performance TODOs.
+# TODO: Use string interpolation.
+# TODO: Use destructive methods were possible.
+# TODO: Use an array for frags instead of a linked list.
+
 module TactfulTokenizer
     # Removes annotations from words.
     def unannotate(token)
@@ -71,10 +82,10 @@ module TactfulTokenizer
     end
 
     def is_sbd_hyp(word)
-        return false if [/\./, /\?/, /!/].none? {|punct| punct.match word}
+        return false if ['.', '?', '!'].none? {|punct| word.include?(punct)}
         c = unannotate(word)
-        return true if [/\.$/, /\?$/, /!$/].any? {|punct| punct.match c}
-        return true if c.match(/.*[\.\!\?]["')\]}*$/, c)
+        return true if ['.', '?', '!'].any? {|punct| word.end_with?(punct)}
+        return true if c.match(/.*[.!?]["')\]]}*$/)
         return false
     end
 
@@ -88,7 +99,7 @@ module TactfulTokenizer
             # Deal with blank lines.
             if frag_list and not line.trim.empty?
                 if curr_words
-                    frag = Frag(curr_words.join(' '))
+                    frag = Frag.new(curr_words.join(' '))
                     prev.next = frag
                     frag.tokenized = WordTokenizer.tokenize(frag.orig)
                     frag_index += 1
@@ -101,10 +112,10 @@ module TactfulTokenizer
                 curr_words.push(word)
 
                 if is_sbd_hyp word
-                    frag = Frag(curr_words.join(' '))
+                    frag = Frag.new(curr_words.join(' '))
                     frag_list ? prev.next = frag : frag_list = frag
                     # Get label and tokenize.
-                    frag.tokenized = tokenize(frag.org).gsub(/(<A>)|(<E>)|(<S>)/g, '')
+                    frag.tokenized = tokenize(frag.orig).gsub(/(<A>)|(<E>)|(<S>)/, '')
                     frag_index += 1;
                     prev = frag;
                     curr_words = []
@@ -112,17 +123,95 @@ module TactfulTokenizer
                 word_index += 1
             end
         end
-        Doc(frag_list)
+        Doc.new(frag_list)
     end
 
     class Model
+        attr_accessor :feats, :lower_words, :non_abbrs
         def initialize(feats, lower_words, non_abbrs)
-            
+            @feats = feats
+            @lower_words = lower_word
+            @non_abbrs = non_abbrs
         end
+
+        def classify_single(frag)
+            probs = {}
+            probs[0] = @feats[[0, '<prior>']] ** 4
+            probs[1] = @feats[[1, '<prior>']] ** 4
+
+            probs.each_key do |label|
+                frag.features.each_pair do |feat, val|
+                    probs[label] *= (@feats[[label,feat+"_"+val]] or 1)
+                end
+            end
     
-    
+            normalize(probs)
+            probs[1]
+        end
+
+        def classify(doc)
+            frag = doc.frag
+            while frag
+                frag.pred = classify_single(frag)
+                frag = frag.next
+            end
+        end
     end
 
+    class Doc
+        attr_accessor :frag
+        def initialize(frag)
+            @frag = frag
+        end
 
+        def featurize(model)
+            frag = @frag
+            while frag
+                frag.features = get_features(frag, model)
+                frag = frag.next
+            end
+        end
 
+        def segment
+            sents, sent = [], []
+            thresh = 0.5
+            frag = @frag
+
+            while frag
+                sent.push(frag.orig)
+                if frag.pred > thresh or frag.ends_seg
+                    break if frag.orig.nil?
+                    sents.push(sent.join(' '))
+                    sent []
+                end
+                frag = frag.next
+            end
+            sents
+        end
+    end
+
+    class Frag
+        attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :label, :features
+        def initialize(orig)
+            @orig = orig
+            @next = nil
+            @ends_seg = false
+            @tokenized = false
+            @pred = nil
+            @label = nil
+            @features = nil
+        end
+    end
+
+    def normalize(counter)
+        total = counter.inject(0) { |s, i| s += i }.to_f
+        counter.map! { |value| value / total }
+    end
+    
+    def tokenize_text(model, text)
+        data = get_text_data(text)
+        data.featurize(model)
+        model.classify(data)
+        return data.segment
+    end
 end

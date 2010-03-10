@@ -1,4 +1,5 @@
 require "word_tokenizer.rb"
+require 'redis'
 include WordTokenizer
 
 # TODO: More documentation.
@@ -64,7 +65,7 @@ module TactfulTokenizer
         if not c2.empty? and c1.gsub('.', '').is_alphabetic? 
             feats['w1length'] = len1.to_s
             begin
-                feats['w1abbr'] = Math.log(1 + model.non_abbrs[c1.chop()]).to_s
+                feats['w1abbr'] = Math.log(1 + model.non_abbrs[c1.chop()]).to_i.to_s
             rescue Exception => e
                 feats['w1abbr'] = '0'
             end
@@ -73,7 +74,7 @@ module TactfulTokenizer
         if not c2.empty? and c2.gsub('.', '').is_alphabetic?
             feats['w2cap'] = c2[0].is_upper_case?.to_s
             begin
-                feats['w2lower'] = Math.log(1 + model.lower_words[c2.downcase]).to_s
+                feats['w2lower'] = Math.log(1 + model.lower_words[c2.downcase]).to_i.to_s
             rescue Exception => e
                 feats['w2lower'] = '0'
             end
@@ -127,11 +128,8 @@ module TactfulTokenizer
     end
 
     class Model
-        attr_accessor :feats, :lower_words, :non_abbrs
-        def initialize(feats, lower_words, non_abbrs)
-            @feats = feats
-            @lower_words = lower_word
-            @non_abbrs = non_abbrs
+        def initialize()
+            @r = Redis.new({:host => "0.0.0.0"})
         end
 
         def classify_single(frag)
@@ -147,6 +145,16 @@ module TactfulTokenizer
     
             normalize(probs)
             probs[1]
+        end
+
+        def feats(arr)
+            @r["feats,#{arr[0]},#{arr[1]}"]
+        end
+        def lower_words(arr)
+            @r["lower_words,#{arr}"]
+        end
+        def non_abbrs(arr)
+            @r["non_abbrs,#{arr}"]
         end
 
         def classify(doc)

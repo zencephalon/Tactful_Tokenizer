@@ -2,6 +2,7 @@ require "word_tokenizer.rb"
 include WordTokenizer
 
 # TODO: More documentation.
+# TODO: DRY up accessors.
 ####### Performance TODOs.
 # Use inline C where necessary?
 
@@ -15,16 +16,18 @@ String.class_eval do
 end
 
 class Model
-    def initialize()
-        File.open("feats.mar") do |f|
+    def initialize(feats="feats.mar", lower_words="lower_words.mar", non_abbrs="non_abbrs.mar")
+        File.open(feats) do |f|
             @feats = Marshal.load(f.read)
         end
-        File.open("lower_words.mar") do |f|
+        File.open(lower_words) do |f|
             @lower_words = Marshal.load(f.read)
         end
-        File.open("non_abbrs.mar") do |f|
+        File.open(non_abbrs) do |f|
             @non_abbrs = Marshal.load(f.read)
         end
+        @p0 = feats('0,<prior>') ** 4
+        @p1 = feats('1,<prior>') ** 4 
     end
 
     def normalize(counter)
@@ -33,13 +36,11 @@ class Model
     end
 
     def classify_single(frag)
-        probs = []
-        probs[0] = feats([0, '<prior>']) ** 4
-        probs[1] = feats([1, '<prior>']) ** 4
+        probs = [@p0, @p1]
 
         for label in (0..1) do
             frag.features.each_pair do |feat, val|
-                probs[label] *= (feats([label,"#{feat.to_s}_#{val.to_s}"]) or 1)
+                probs[label] *= (feats("#{label},#{feat.to_s}_#{val.to_s}") or 1)
             end
         end
 
@@ -48,7 +49,7 @@ class Model
     end
 
     def feats(arr)
-        t = @feats["#{arr[0]},#{arr[1]}"]
+        t = @feats[arr]
         t.to_f if t
     end
 
@@ -56,6 +57,7 @@ class Model
         t = @lower_words[arr]
         t.to_f if t
     end
+
     def non_abbrs(arr)
         t = @non_abbrs[arr]
         t.to_f if t

@@ -1,5 +1,4 @@
 require "word_tokenizer.rb"
-require 'redis'
 include WordTokenizer
 
 # TODO: More documentation.
@@ -17,7 +16,6 @@ end
 
 class Model
     def initialize()
-        @r = Redis.new({:host => "0.0.0.0"})
         File.open("feats.mar") do |f|
             @feats = Marshal.load(f.read)
         end

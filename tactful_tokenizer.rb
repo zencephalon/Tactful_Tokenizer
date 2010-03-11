@@ -17,17 +17,26 @@ end
 
 class Model
     def initialize(feats="feats.mar", lower_words="lower_words.mar", non_abbrs="non_abbrs.mar")
-        File.open(feats) do |f|
-            @feats = Marshal.load(f.read)
-        end
-        File.open(lower_words) do |f|
-            @lower_words = Marshal.load(f.read)
-        end
-        File.open(non_abbrs) do |f|
-            @non_abbrs = Marshal.load(f.read)
+        @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
+            File.open(file) do |f|
+                Marshal.load(f.read)
+            end
         end
         @p0 = feats('0,<prior>') ** 4
         @p1 = feats('1,<prior>') ** 4 
+    end
+
+    def feats(arr)
+        t = @feats[arr]
+        t.to_f if t
+    end
+    def lower_words(arr)
+        t = @lower_words[arr]
+        t.to_f if t
+    end
+    def non_abbrs(arr)
+        t = @non_abbrs[arr]
+        t.to_f if t
     end
 
     def normalize(counter)
@@ -38,29 +47,13 @@ class Model
     def classify_single(frag)
         probs = [@p0, @p1]
 
-        for label in (0..1) do
-            frag.features.each_pair do |feat, val|
-                probs[label] *= (feats("#{label},#{feat.to_s}_#{val.to_s}") or 1)
-            end
+        frag.features.each_pair do |feat, val|
+            probs[0] *= (feats("0,#{feat.to_s}_#{val.to_s}") or 1)
+            probs[1] *= (feats("1,#{feat.to_s}_#{val.to_s}") or 1)
         end
 
         normalize(probs)
         probs[1]
-    end
-
-    def feats(arr)
-        t = @feats[arr]
-        t.to_f if t
-    end
-
-    def lower_words(arr)
-        t = @lower_words[arr]
-        t.to_f if t
-    end
-
-    def non_abbrs(arr)
-        t = @non_abbrs[arr]
-        t.to_f if t
     end
 
     def classify(doc)
@@ -69,38 +62,21 @@ class Model
         end
     end
 
-    def tokenize_text(text)
-        data = get_text_data(text)
-        data.featurize(self)
-        classify(data)
-        return data.segment
-    end
-end
-
-class Doc
-    attr_accessor :frags
-    def initialize(frags)
-        @frags = frags
-    end
-
-    def featurize(model)
-        @frags.each do |frag|
-            frag.features = get_features(frag, model)
-        end
-    end
-
-    # Normalizes numbers and discards ambiguous punctuation.
-    def clean(token)
-        token.gsub(/[.,\d]*\d/, '<NUM>')
-        .gsub(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')
-        .gsub('--', ' ')
-    end
-
+    # Finds the features in a text fragment of the form:
+    # ... w1. (sb?) w2 ...
+    # Features listed in rough order of importance:
+    # * w1: a word that includes a period.
+    # * w2: the next word, if it exists.
+    # * w1length: the number of alphabetic characters in w1.
+    # * both: w1 and w2 taken together.
+    # * w1abbr: logarithmic count of w1 occuring without a period.
+    # * w2lower: logarithmiccount of w2 occuring lowercased.
+    # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
-        words1 = clean(frag.tokenized).split
+        words1 = frag.clean.split
         w1 = words1.empty? ? '' : words1[-1]
         if frag.next
-            words2 = clean(frag.next.tokenized).split
+            words2 = frag.next.clean.split
             w2 = words2.empty? ? '' : words2[0]
         else
             words2, w2 = [], ''
@@ -135,6 +111,63 @@ class Doc
         feats
     end
 
+    def featurize(doc)
+        doc.frags.each do |frag|
+            frag.features = get_features(frag, self)
+        end
+    end
+
+    def tokenize_text(text)
+        data = Doc.new(text)
+        featurize(data)
+        classify(data)
+        return data.segment
+    end
+end
+
+class Doc
+    attr_accessor :frags
+    def initialize(text)
+        get_text_data(text)
+    end
+
+    def get_text_data(text)
+        @frags = []
+        curr_words = []
+        lower_words, non_abbrs = {}, {};
+
+        text.lines.each do |line|
+            # Deal with blank lines.
+            if line.strip.empty?
+                t = curr_words.join(' ')
+                frag = Frag.new(t, tokenize(t), true)
+                @frags.last.next = frag if @frags.last
+                @frags.push frag
+
+                curr_words = []
+            end
+            line.split.each do |word|
+                curr_words.push(word)
+
+                if is_hyp word
+                    t = curr_words.join(' ')
+                    frag = Frag.new(t, tokenize(t).gsub(/(<A>)|(<E>)|(<S>)/, ''))
+                    @frags.last.next = frag if @frags.last
+                    @frags.push frag
+
+                    curr_words = []
+                end
+            end
+        end
+    end
+
+    def is_hyp(word)
+        return false if ['.', '?', '!'].none? {|punct| word.include?(punct)}
+        return true if ['.', '?', '!'].any? {|punct| word.end_with?(punct)}
+        return true if word.match(/.*[.!?]["')\]]}*$/)
+        return false
+    end
+
     def segment
         sents, sent = [], []
         thresh = 0.5
@@ -161,54 +194,11 @@ class Frag
         @pred = nil
         @features = nil
     end
-end
 
-# Finds the features in a text fragment of the form:
-# ... w1. (sb?) w2 ...
-# Features listed in rough order of importance:
-# * w1: a word that includes a period.
-# * w2: the next word, if it exists.
-# * w1length: the number of alphabetic characters in w1.
-# * both: w1 and w2 taken together.
-# * w1abbr: logarithmic count of w1 occuring without a period.
-# * w2lower: logarithmiccount of w2 occuring lowercased.
-# * w1w2upper: true if w1 and w2 are capitalized.
-
-def is_sbd_hyp(word)
-    return false if ['.', '?', '!'].none? {|punct| word.include?(punct)}
-    return true if ['.', '?', '!'].any? {|punct| word.end_with?(punct)}
-    return true if word.match(/.*[.!?]["')\]]}*$/)
-    return false
-end
-
-def get_text_data(text)
-    frag_list = []
-    curr_words = []
-    lower_words, non_abbrs = {}, {};
-
-    text.lines.each do |line|
-        # Deal with blank lines.
-        if line.strip.empty?
-            t = curr_words.join(' ')
-            frag = Frag.new(t, tokenize(t), true)
-            frag_list.last.next = frag if frag_list.last
-            frag_list.push frag
-
-            curr_words = []
-        end
-        line.split.each do |word|
-            curr_words.push(word)
-
-            if is_sbd_hyp word
-                t = curr_words.join(' ')
-                frag = Frag.new(t, tokenize(t).gsub(/(<A>)|(<E>)|(<S>)/, ''))
-                frag_list.last.next = frag if frag_list.last
-                frag_list.push frag
-
-                curr_words = []
-            end
-        end
+    # Normalizes numbers and discards ambiguous punctuation.
+    def clean()
+        @tokenized.gsub(/[.,\d]*\d/, '<NUM>')
+        .gsub(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')
+        .gsub('--', ' ')
     end
-    Doc.new(frag_list)
 end
-

@@ -56,25 +56,21 @@ class Model
     end
 
     def classify(doc)
-        frag = doc.frag
-        while frag
+        doc.frags.each do |frag|
             frag.pred = classify_single(frag)
-            frag = frag.next
         end
     end
 end
 
 class Doc
-    attr_accessor :frag
-    def initialize(frag)
-        @frag = frag
+    attr_accessor :frags
+    def initialize(frags)
+        @frags = frags
     end
 
     def featurize(model)
-        frag = @frag
-        while frag
+        @frags.each do |frag|
             frag.features = get_features(frag, model)
-            frag = frag.next
         end
     end
 
@@ -86,10 +82,10 @@ class Doc
     end
 
     def get_features(frag, model)
-        words1 = clean(frag.tokenized).split(/\s+/)
+        words1 = clean(frag.tokenized).split
         w1 = words1.empty? ? '' : words1[-1]
         if frag.next
-            words2 = clean(frag.next.tokenized).split(/\s+/)
+            words2 = clean(frag.next.tokenized).split
             w2 = words2.empty? ? '' : words2[0]
         else
             words2, w2 = [], ''
@@ -127,37 +123,29 @@ class Doc
     def segment
         sents, sent = [], []
         thresh = 0.5
-        frag = @frag
 
-        while frag
+        @frags.each do |frag|
             sent.push(frag.orig)
             if frag.pred > thresh or frag.ends_seg
                 break if frag.orig.nil?
                 sents.push(sent.join(' '))
                 sent = []
             end
-            frag = frag.next
         end
         sents
     end
 end
 
 class Frag
-    attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :label, :features
-    def initialize(orig='')
+    attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :features
+    def initialize(orig='', tokenized=false, ends_seg=false)
         @orig = orig
         @next = nil
-        @ends_seg = false
-        @tokenized = false
+        @ends_seg = ends_seg
+        @tokenized = tokenized
         @pred = nil
-        @label = nil
         @features = nil
     end
-end
-
-# Removes annotations from words.
-def unannotate(token)
-    token.gsub(/(<A>)?(<E>)?(<S>)?$/, '')
 end
 
 # Finds the features in a text fragment of the form:
@@ -173,45 +161,37 @@ end
 
 def is_sbd_hyp(word)
     return false if ['.', '?', '!'].none? {|punct| word.include?(punct)}
-    c = unannotate(word)
     return true if ['.', '?', '!'].any? {|punct| word.end_with?(punct)}
-    return true if c.match(/.*[.!?]["')\]]}*$/)
+    return true if word.match(/.*[.!?]["')\]]}*$/)
     return false
 end
 
 def get_text_data(text)
-    frag_list = nil
+    frag_list = []
     curr_words = []
-    frag_index, word_index = 0, 0
     lower_words, non_abbrs = {}, {};
-    prev = Frag.new
 
     text.lines.each do |line|
         # Deal with blank lines.
-        if frag_list and not line.strip.empty?
-            if curr_words
-                frag = Frag.new(curr_words.join(' '))
-                prev.next = frag
-                frag.tokenized = WordTokenizer.tokenize(frag.orig)
-                frag_index += 1
-                prev = frag
-                curr_words = []
-            end
-            frag.ends_seg = true
+        if line.strip.empty?
+            t = curr_words.join(' ')
+            frag = Frag.new(t, tokenize(t), true)
+            frag_list.last.next = frag if frag_list.last
+            frag_list.push frag
+
+            curr_words = []
         end
         line.split.each do |word|
             curr_words.push(word)
 
             if is_sbd_hyp word
-                frag = Frag.new(curr_words.join(' '))
-                frag_list ? prev.next = frag : frag_list = frag
-                # Get label and tokenize.
-                frag.tokenized = tokenize(frag.orig).gsub(/(<A>)|(<E>)|(<S>)/, '')
-                frag_index += 1;
-                prev = frag;
+                t = curr_words.join(' ')
+                frag = Frag.new(t, tokenize(t).gsub(/(<A>)|(<E>)|(<S>)/, ''))
+                frag_list.last.next = frag if frag_list.last
+                frag_list.push frag
+
                 curr_words = []
             end
-            word_index += 1
         end
     end
     Doc.new(frag_list)

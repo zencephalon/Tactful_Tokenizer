@@ -73,10 +73,9 @@ class Model
     # * w2lower: logarithmiccount of w2 occuring lowercased.
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
-        words1 = frag.clean.split
+        words1 = frag.cleaned.split
         w1 = words1.empty? ? '' : words1[-1]
-        if frag.next
-            words2 = frag.next.clean.split
+        if words2 = frag.next
             w2 = words2.empty? ? '' : words2[0]
         else
             words2, w2 = [], ''
@@ -140,8 +139,8 @@ class Doc
             # Deal with blank lines.
             if line.strip.empty?
                 t = curr_words.join(' ')
-                frag = Frag.new(t, tokenize(t), true)
-                @frags.last.next = frag if @frags.last
+                frag = Frag.new(t, true)
+                @frags.last.next = frag.cleaned.split if @frags.last
                 @frags.push frag
 
                 curr_words = []
@@ -151,8 +150,8 @@ class Doc
 
                 if is_hyp word
                     t = curr_words.join(' ')
-                    frag = Frag.new(t, tokenize(t).gsub(/(<A>)|(<E>)|(<S>)/, ''))
-                    @frags.last.next = frag if @frags.last
+                    frag = Frag.new(t)
+                    @frags.last.next = frag.cleaned.split if @frags.last
                     @frags.push frag
 
                     curr_words = []
@@ -185,20 +184,22 @@ class Doc
 end
 
 class Frag
-    attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :features
-    def initialize(orig='', tokenized=false, ends_seg=false)
+    attr_accessor :orig, :next, :ends_seg, :cleaned, :pred, :features
+    def initialize(orig='', ends_seg=false)
         @orig = orig
+        @cleaned = String.new(orig)
+        clean
         @next = nil
         @ends_seg = ends_seg
-        @tokenized = tokenized
         @pred = nil
         @features = nil
     end
 
     # Normalizes numbers and discards ambiguous punctuation.
     def clean()
-        @tokenized.gsub(/[.,\d]*\d/, '<NUM>')
-        .gsub(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')
-        .gsub('--', ' ')
+        tokenize(@cleaned)
+        @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
+        @cleaned.gsub!(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')
+        @cleaned.gsub!('--', ' ')
     end
 end

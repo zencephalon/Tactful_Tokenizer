@@ -68,8 +68,7 @@ class Model
     # * w2lower: logarithmiccount of w2 occuring lowercased.
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
-        words1 = frag.cleaned.split
-        w1 = words1.empty? ? '' : words1[-1]
+        w1 = (frag.cleaned.split.last or '')
         if words2 = frag.next
             w2 = words2.empty? ? '' : words2[0]
         else

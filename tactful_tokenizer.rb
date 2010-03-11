@@ -1,4 +1,5 @@
 require "word_tokenizer.rb"
+require "andand"
 include WordTokenizer
 
 # TODO: More documentation.
@@ -22,21 +23,19 @@ class Model
                 Marshal.load(f.read)
             end
         end
-        @p0 = feats('0,<prior>') ** 4
-        @p1 = feats('1,<prior>') ** 4 
+        @p0, @p1 = feats('0,<prior>') ** 4, feats('1,<prior>') ** 4  
     end
 
+    # Accessors. Obviously these would be prime candidates for both
+    # metaprogramming and for andand, but those are poor for performance.
     def feats(arr)
-        t = @feats[arr]
-        t.to_f if t
+        if t = @feats[arr] then t.to_f end
     end
     def lower_words(arr)
-        t = @lower_words[arr]
-        t.to_f if t
+        if t = @lower_words[arr] then t.to_f end
     end
     def non_abbrs(arr)
-        t = @non_abbrs[arr]
-        t.to_f if t
+        if t = @non_abbrs[arr] then t.to_f end
     end
 
     def normalize(counter)
@@ -46,19 +45,17 @@ class Model
 
     def classify_single(frag)
         probs = [@p0, @p1]
-
         frag.features.each_pair do |feat, val|
             probs[0] *= (feats("0,#{feat.to_s}_#{val.to_s}") or 1)
             probs[1] *= (feats("1,#{feat.to_s}_#{val.to_s}") or 1)
         end
-
         normalize(probs)
-        probs[1]
+        frag.pred = probs[1]
     end
 
     def classify(doc)
         doc.frags.each do |frag|
-            frag.pred = classify_single(frag)
+            classify_single frag
         end
     end
 
@@ -84,35 +81,32 @@ class Model
         c1 = w1.gsub(/(^.+?\-)/, '')
         c2 = w2.gsub(/(\-.+?)$/, '')
 
-        feats = {}
-        feats['w1'], feats['w2'] = c1, c2
-        feats['both'] = "#{c1}_#{c2}"
+        frag.features = {'w1' => c1, 'w2' => c2, 'both' => "#{c1}_#{c2}"}
 
         len1 = [10, c1.gsub(/\W/, '').length].min
 
         if not c2.empty? and c1.gsub('.', '').is_alphabetic? 
-            feats['w1length'] = len1
+            frag.features['w1length'] = len1
             begin
-                feats['w1abbr'] = Math.log(1 + model.non_abbrs(c1.chop())).to_i
+                frag.features['w1abbr'] = Math.log(1 + model.non_abbrs(c1.chop())).to_i
             rescue Exception => e
-                feats['w1abbr'] = 0
+                frag.features['w1abbr'] = 0
             end
         end
 
         if not c2.empty? and c2.gsub('.', '').is_alphabetic?
-            feats['w2cap'] = c2[0].is_upper_case?.to_s.capitalize
+            frag.features['w2cap'] = c2[0].is_upper_case?.to_s.capitalize
             begin
-                feats['w2lower'] = Math.log(1 + model.lower_words(c2.downcase)).to_i
+                frag.features['w2lower'] = Math.log(1 + model.lower_words(c2.downcase)).to_i
             rescue Exception => e
-                feats['w2lower'] = 0
+                frag.features['w2lower'] = 0
             end
         end
-        feats
     end
 
     def featurize(doc)
         doc.frags.each do |frag|
-            frag.features = get_features(frag, self)
+            get_features(frag, self)
         end
     end
 
@@ -140,7 +134,7 @@ class Doc
             if line.strip.empty?
                 t = curr_words.join(' ')
                 frag = Frag.new(t, true)
-                @frags.last.next = frag.cleaned.split if @frags.last
+                @frags.last.andand.next = frag.cleaned.split
                 @frags.push frag
 
                 curr_words = []
@@ -151,7 +145,7 @@ class Doc
                 if is_hyp word
                     t = curr_words.join(' ')
                     frag = Frag.new(t)
-                    @frags.last.next = frag.cleaned.split if @frags.last
+                    @frags.last.andand.next = frag.cleaned.split
                     @frags.push frag
 
                     curr_words = []
@@ -188,10 +182,8 @@ class Frag
     def initialize(orig='', ends_seg=false)
         @orig = orig
         clean(orig)
-        @next = nil
+        @next, @pred, @features = nil, nil, nil
         @ends_seg = ends_seg
-        @pred = nil
-        @features = nil
     end
 
     # Normalizes numbers and discards ambiguous punctuation.

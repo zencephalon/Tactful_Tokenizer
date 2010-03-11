@@ -18,7 +18,15 @@ end
 class Model
     def initialize()
         @r = Redis.new({:host => "0.0.0.0"})
-        @i = 0
+        File.open("feats.mar") do |f|
+            @feats = Marshal.load(f.read)
+        end
+        File.open("lower_words.mar") do |f|
+            @lower_words = Marshal.load(f.read)
+        end
+        File.open("non_abbrs.mar") do |f|
+            @non_abbrs = Marshal.load(f.read)
+        end
     end
 
     def normalize(counter)
@@ -42,19 +50,16 @@ class Model
     end
 
     def feats(arr)
-        t = @r["feats,#{arr[0]},#{arr[1]}"]
-        @i += 1
+        t = @feats["#{arr[0]},#{arr[1]}"]
         t.to_f if t
     end
 
     def lower_words(arr)
-        t = @r["lower_words,#{arr}"]
-        @i += 1
+        t = @lower_words[arr]
         t.to_f if t
     end
     def non_abbrs(arr)
-        t = @r["non_abbrs,#{arr}"]
-        @i += 1
+        t = @non_abbrs[arr]
         t.to_f if t
     end
 
@@ -68,7 +73,6 @@ class Model
         data = get_text_data(text)
         data.featurize(self)
         classify(data)
-        puts @i
         return data.segment
     end
 end

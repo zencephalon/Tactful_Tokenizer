@@ -61,11 +61,7 @@ class Model
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
         w1 = (frag.cleaned.split.last or '')
-        if words2 = frag.next
-            w2 = words2.empty? ? '' : words2[0]
-        else
-            words2, w2 = [], ''
-        end
+        w2 = (frag.next.andand.first or '')
 
         frag.features = ["w1_#{w1}".freeze, "w2_#{w2}".freeze, "both_#{w1}_#{w2}".freeze]
 

@@ -187,8 +187,7 @@ class Frag
     attr_accessor :orig, :next, :ends_seg, :cleaned, :pred, :features
     def initialize(orig='', ends_seg=false)
         @orig = orig
-        @cleaned = String.new(orig)
-        clean
+        clean(orig)
         @next = nil
         @ends_seg = ends_seg
         @pred = nil
@@ -196,7 +195,8 @@ class Frag
     end
 
     # Normalizes numbers and discards ambiguous punctuation.
-    def clean()
+    def clean(s)
+        @cleaned = String.new(s)
         tokenize(@cleaned)
         @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
         @cleaned.gsub!(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')

@@ -17,13 +17,13 @@ String.class_eval do
 end
 
 class Model
-    def initialize(feats="feats_f.mar", lower_words="lower_words_f.mar", non_abbrs="non_abbrs_f.mar")
+    def initialize(feats="feats_s.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
                 Marshal.load(f.read)
             end
         end
-        @p0, @p1 = @feats['0,<prior>'.freeze] ** 4, @feats['1,<prior>'.freeze] ** 4  
+        @p0, @p1 = @feats[:"0,<prior>"] ** 4, @feats[:"1,<prior>"] ** 4  
     end
 
     attr_accessor :feats, :lower_words, :non_abbrs
@@ -36,8 +36,8 @@ class Model
     def classify_single(frag)
         probs = [@p0, @p1]
         frag.features.each do |feat|
-            probs[0] *= (@feats["0,#{feat}".freeze] or 1)
-            probs[1] *= (@feats["1,#{feat}".freeze] or 1)
+            probs[0] *= (@feats[:"0,#{feat}"] or 1)
+            probs[1] *= (@feats[:"1,#{feat}"] or 1)
         end
         normalize(probs)
         frag.pred = probs[1]
@@ -63,25 +63,25 @@ class Model
         w1 = (frag.cleaned.split.last or '')
         w2 = (frag.next.andand.first or '')
 
-        frag.features = ["w1_#{w1}".freeze, "w2_#{w2}".freeze, "both_#{w1}_#{w2}".freeze]
+        frag.features = [:"w1_#{w1}", :"w2_#{w2}", :"both_#{w1}_#{w2}"]
 
         len1 = [10, w1.gsub(/\W/, '').length].min
 
         if not w2.empty? and w1.gsub('.', '').is_alphabetic? 
-            frag.features.push "w1length_#{len1}".freeze
+            frag.features.push :"w1length_#{len1}"
             begin
-                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}".freeze
+                frag.features.push :"w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
             rescue Exception => e
-                frag.features.push "w1abbr_0".freeze
+                frag.features.push :"w1abbr_0"
             end
         end
 
         if not w2.empty? and w2.gsub('.', '').is_alphabetic?
-            frag.features.push "w2cap_#{w2[0].is_upper_case?.to_s.capitalize}".freeze
+            frag.features.push :"w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
             begin
-                frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}".freeze
+                frag.features.push :"w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
             rescue Exception => e
-                frag.features.push "w2lower_0".freeze
+                frag.features.push :"w2lower_0"
             end
         end
     end

@@ -45,9 +45,9 @@ class Model
 
     def classify_single(frag)
         probs = [@p0, @p1]
-        frag.features.each_pair do |feat, val|
-            probs[0] *= (feats("0,#{feat.to_s}_#{val.to_s}") or 1)
-            probs[1] *= (feats("1,#{feat.to_s}_#{val.to_s}") or 1)
+        frag.features.each do |feat|
+            probs[0] *= (feats("0,#{feat}") or 1)
+            probs[1] *= (feats("1,#{feat}") or 1)
         end
         normalize(probs)
         frag.pred = probs[1]
@@ -81,25 +81,25 @@ class Model
         c1 = w1.gsub(/(^.+?\-)/, '')
         c2 = w2.gsub(/(\-.+?)$/, '')
 
-        frag.features = {'w1' => c1, 'w2' => c2, 'both' => "#{c1}_#{c2}"}
+        frag.features = ["w1_#{c1}", "w2_#{c2}", "both_#{c1}_#{c2}"]
 
         len1 = [10, c1.gsub(/\W/, '').length].min
 
         if not c2.empty? and c1.gsub('.', '').is_alphabetic? 
-            frag.features['w1length'] = len1
+            frag.features.push "w1length_#{len1}"
             begin
-                frag.features['w1abbr'] = Math.log(1 + model.non_abbrs(c1.chop())).to_i
+                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs(c1.chop())).to_i}"
             rescue Exception => e
-                frag.features['w1abbr'] = 0
+                frag.features.push "w1abbr_0"
             end
         end
 
         if not c2.empty? and c2.gsub('.', '').is_alphabetic?
-            frag.features['w2cap'] = c2[0].is_upper_case?.to_s.capitalize
+            frag.features.push "w2cap_#{c2[0].is_upper_case?.to_s.capitalize}"
             begin
-                frag.features['w2lower'] = Math.log(1 + model.lower_words(c2.downcase)).to_i
+                frag.features.push "w2lower_#{Math.log(1 + model.lower_words(c2.downcase)).to_i}"
             rescue Exception => e
-                frag.features['w2lower'] = 0
+                frag.features.push "w2lower_0"
             end
         end
     end

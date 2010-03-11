@@ -17,7 +17,7 @@ String.class_eval do
 end
 
 class Model
-    def initialize(feats="feats_f.mar", lower_words="lower_words.mar", non_abbrs="non_abbrs.mar")
+    def initialize(feats="feats_f.mar", lower_words="lower_words_f.mar", non_abbrs="non_abbrs_f.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
                 Marshal.load(f.read)
@@ -26,15 +26,7 @@ class Model
         @p0, @p1 = @feats['0,<prior>'.freeze] ** 4, @feats['1,<prior>'.freeze] ** 4  
     end
 
-    # Accessors. Obviously these would be prime candidates for both
-    # metaprogramming and for andand, but those are poor for performance.
-    attr_accessor :feats
-    def lower_words(arr)
-        if t = @lower_words[arr] then t.to_f end
-    end
-    def non_abbrs(arr)
-        if t = @non_abbrs[arr] then t.to_f end
-    end
+    attr_accessor :feats, :lower_words, :non_abbrs
 
     def normalize(counter)
         total = (counter.inject(0) { |s, i| s += i }).to_f
@@ -75,9 +67,6 @@ class Model
             words2, w2 = [], ''
         end
 
-        w1.gsub!(/(^.+?\-)/, '')
-        w2.gsub!(/(\-.+?)$/, '')
-
         frag.features = ["w1_#{w1}".freeze, "w2_#{w2}".freeze, "both_#{w1}_#{w2}".freeze]
 
         len1 = [10, w1.gsub(/\W/, '').length].min
@@ -85,7 +74,7 @@ class Model
         if not w2.empty? and w1.gsub('.', '').is_alphabetic? 
             frag.features.push "w1length_#{len1}".freeze
             begin
-                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs(w1.chop())).to_i}".freeze
+                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}".freeze
             rescue Exception => e
                 frag.features.push "w1abbr_0".freeze
             end
@@ -94,7 +83,7 @@ class Model
         if not w2.empty? and w2.gsub('.', '').is_alphabetic?
             frag.features.push "w2cap_#{w2[0].is_upper_case?.to_s.capitalize}".freeze
             begin
-                frag.features.push "w2lower_#{Math.log(1 + model.lower_words(w2.downcase)).to_i}".freeze
+                frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}".freeze
             rescue Exception => e
                 frag.features.push "w2lower_0".freeze
             end

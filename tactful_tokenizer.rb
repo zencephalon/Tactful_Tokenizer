@@ -121,10 +121,6 @@ end
 class Doc
     attr_accessor :frags
     def initialize(text)
-        get_text_data(text)
-    end
-
-    def get_text_data(text)
         @frags = []
         curr_words = []
         lower_words, non_abbrs = {}, {};

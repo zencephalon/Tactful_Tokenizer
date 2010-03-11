@@ -6,15 +6,16 @@ class TactfulTokenize < Test::Unit::TestCase
         m = Model.new
         File.open("sample.txt") do |f|
             text = f.read
-            text = tokenize_text(m, text)
+            text = m.tokenize_text(text)
             File.open("test_out.txt","w+") do |g|
                 text.each do |line|
                     g.puts line unless line.empty?
-                end
+                end   
+                g.rewind 
+                t2 = g.read
+                t1 = File.open("verification_out.txt").read
+                assert_equal(t1, t2)
             end
         end
-        t1 = File.open("verification_out.txt").read
-        t2 = File.open("test_out.txt").read
-        assert_equal(t1, t2)
     end
 end

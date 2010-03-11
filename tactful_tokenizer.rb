@@ -1,14 +1,10 @@
 require "word_tokenizer.rb"
 require 'redis'
-require 'andand'
 include WordTokenizer
 
 # TODO: More documentation.
-# TODO: Test coverage.
 ####### Performance TODOs.
-# TODO: Use string interpolation.
-# TODO: Use destructive methods where possible.
-# TODO: Use an array for frags instead of a linked list.
+# Use inline C where necessary?
 
 String.class_eval do
     def is_alphabetic?
@@ -22,6 +18,7 @@ end
 class Model
     def initialize()
         @r = Redis.new({:host => "0.0.0.0"})
+        @i = 0
     end
 
     def normalize(counter)
@@ -45,20 +42,34 @@ class Model
     end
 
     def feats(arr)
-        @r["feats,#{arr[0]},#{arr[1]}"].andand.to_f
+        t = @r["feats,#{arr[0]},#{arr[1]}"]
+        @i += 1
+        t.to_f if t
     end
 
     def lower_words(arr)
-        @r["lower_words,#{arr}"].andand.to_f
+        t = @r["lower_words,#{arr}"]
+        @i += 1
+        t.to_f if t
     end
     def non_abbrs(arr)
-        @r["non_abbrs,#{arr}"].andand.to_f
+        t = @r["non_abbrs,#{arr}"]
+        @i += 1
+        t.to_f if t
     end
 
     def classify(doc)
         doc.frags.each do |frag|
             frag.pred = classify_single(frag)
         end
+    end
+
+    def tokenize_text(text)
+        data = get_text_data(text)
+        data.featurize(self)
+        classify(data)
+        puts @i
+        return data.segment
     end
 end
 
@@ -197,9 +208,3 @@ def get_text_data(text)
     Doc.new(frag_list)
 end
 
-def tokenize_text(model, text)
-    data = get_text_data(text)
-    data.featurize(model)
-    model.classify(data)
-    return data.segment
-end

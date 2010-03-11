@@ -45,12 +45,13 @@ module TactfulTokenizer
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
         words1 = clean(frag.tokenized).split(/\s+/)
-        w1 = words1 ? words1[-1] : ''
+        w1 = words1.empty? ? '' : words1[-1]
         if frag.next
             words2 = clean(frag.next.tokenized).split(/\s+/)
-            w2 = words2 ? words2[0] : ''
+            w2 = words2.empty? ? '' : words2[0]
         else
-            words2, w2 = [], ''
+            words2 = []
+            w2 = ''
         end
 
         c1 = w1.gsub(/(^.+?\-)/, '')
@@ -59,7 +60,7 @@ module TactfulTokenizer
         feats = {}
         feats['w1'] = c1
         feats['w2'] = c2
-        feats['both'] = c1 + "_" + c2
+        feats['both'] = "#{c1}_#{c2}"
 
         len1 = [10, c1.gsub(/\W/, '').length].min
 
@@ -96,10 +97,11 @@ module TactfulTokenizer
         curr_words = []
         frag_index, word_index = 0, 0
         lower_words, non_abbrs = {}, {};
+        prev = Frag.new
 
         text.lines.each do |line|
             # Deal with blank lines.
-            if frag_list and not line.trim.empty?
+            if frag_list and not line.strip.empty?
                 if curr_words
                     frag = Frag.new(curr_words.join(' '))
                     prev.next = frag
@@ -128,89 +130,6 @@ module TactfulTokenizer
         Doc.new(frag_list)
     end
 
-    class Model
-        def initialize()
-            @r = Redis.new({:host => "0.0.0.0"})
-        end
-
-        def classify_single(frag)
-            probs = []
-            probs[0] = feats([0, '<prior>']) ** 4
-            probs[1] = feats([1, '<prior>']) ** 4
-
-            for label in (0..1) do
-                frag.features.each_pair do |feat, val|
-                    probs[label] *= (feats([label,feat.to_s+"_"+val.to_s]) or 1)
-                end
-            end
-    
-            normalize(probs)
-            probs[1]
-        end
-
-        def feats(arr)
-            @r["feats,#{arr[0]},#{arr[1]}"].andand.to_f
-        end
-        def lower_words(arr)
-            @r["lower_words,#{arr}"].andand.to_f
-        end
-        def non_abbrs(arr)
-            @r["non_abbrs,#{arr}"].andand.to_f
-        end
-
-        def classify(doc)
-            frag = doc.frag
-            while frag
-                frag.pred = classify_single(frag)
-                frag = frag.next
-            end
-        end
-    end
-
-    class Doc
-        attr_accessor :frag
-        def initialize(frag)
-            @frag = frag
-        end
-
-        def featurize(model)
-            frag = @frag
-            while frag
-                frag.features = get_features(frag, model)
-                frag = frag.next
-            end
-        end
-
-        def segment
-            sents, sent = [], []
-            thresh = 0.5
-            frag = @frag
-
-            while frag
-                sent.push(frag.orig)
-                if frag.pred > thresh or frag.ends_seg
-                    break if frag.orig.nil?
-                    sents.push(sent.join(' '))
-                    sent = []
-                end
-                frag = frag.next
-            end
-            sents
-        end
-    end
-
-    class Frag
-        attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :label, :features
-        def initialize(orig)
-            @orig = orig
-            @next = nil
-            @ends_seg = false
-            @tokenized = false
-            @pred = nil
-            @label = nil
-            @features = nil
-        end
-    end
 
     def normalize(counter)
         total = (counter.inject(0) { |s, i| s += i }).to_f
@@ -224,3 +143,90 @@ module TactfulTokenizer
         return data.segment
     end
 end
+
+
+class Model
+    def initialize()
+        @r = Redis.new({:host => "0.0.0.0"})
+    end
+
+    def classify_single(frag)
+        probs = []
+        probs[0] = feats([0, '<prior>']) ** 4
+        probs[1] = feats([1, '<prior>']) ** 4
+
+        for label in (0..1) do
+            frag.features.each_pair do |feat, val|
+                probs[label] *= (feats([label,feat.to_s+"_"+val.to_s]) or 1)
+            end
+        end
+
+        normalize(probs)
+        probs[1]
+    end
+
+    def feats(arr)
+        @r["feats,#{arr[0]},#{arr[1]}"].andand.to_f
+    end
+    def lower_words(arr)
+        @r["lower_words,#{arr}"].andand.to_f
+    end
+    def non_abbrs(arr)
+        @r["non_abbrs,#{arr}"].andand.to_f
+    end
+
+    def classify(doc)
+        frag = doc.frag
+        while frag
+            frag.pred = classify_single(frag)
+            frag = frag.next
+        end
+    end
+end
+
+class Doc
+    attr_accessor :frag
+    def initialize(frag)
+        @frag = frag
+    end
+
+    def featurize(model)
+        frag = @frag
+        while frag
+            frag.features = get_features(frag, model)
+            frag = frag.next
+        end
+    end
+
+    def segment
+        sents, sent = [], []
+        thresh = 0.5
+        frag = @frag
+
+        while frag
+            sent.push(frag.orig)
+            if frag.pred > thresh or frag.ends_seg
+                break if frag.orig.nil?
+                sents.push(sent.join(' '))
+                sent = []
+            end
+            frag = frag.next
+        end
+        sents
+    end
+end
+
+class Frag
+    attr_accessor :orig, :next, :ends_seg, :tokenized, :pred, :label, :features
+    def initialize(orig='')
+        @orig = orig
+        @next = nil
+        @ends_seg = false
+        @tokenized = false
+        @pred = nil
+        @label = nil
+        @features = nil
+    end
+end
+
+include TactfulTokenizer

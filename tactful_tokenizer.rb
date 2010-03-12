@@ -38,10 +38,9 @@ class Model
         feat = ''
         frag.features.each do |feat|
             probs[0] *= (@feats[:"0,#{feat}"] or next)
-            probs[1] *= (@feats[:"1,#{feat}"] or next)
+            probs[1] *= @feats[:"1,#{feat}"]
         end
-        normalize(probs)
-        frag.pred = probs[1]
+        frag.pred = normalize(probs)[1]
     end
 
     def classify(doc)
@@ -69,7 +68,7 @@ class Model
 
         len1 = [10, w1.gsub(/\W/, '').length].min
 
-        if not w2.empty? and w1.gsub('.', '').is_alphabetic? 
+        if not w2.empty? and w1.gsub(/\./, '').is_alphabetic? 
             frag.features.push :"w1length_#{len1}"
             begin
                 frag.features.push :"w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
@@ -78,7 +77,7 @@ class Model
             end
         end
 
-        if not w2.empty? and w2.gsub('.', '').is_alphabetic?
+        if not w2.empty? and w2.gsub(/\./, '').is_alphabetic?
             frag.features.push :"w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
             begin
                 frag.features.push :"w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"

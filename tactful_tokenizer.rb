@@ -3,7 +3,6 @@ require "andand"
 include WordTokenizer
 
 # TODO: More documentation.
-# TODO: DRY up accessors.
 ####### Performance TODOs.
 # Use inline C where necessary?
 

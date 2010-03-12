@@ -35,6 +35,7 @@ class Model
 
     def classify_single(frag)
         probs = [@p0, @p1]
+        feat = ''
         frag.features.each do |feat|
             probs[0] *= (@feats[:"0,#{feat}"] or 1)
             probs[1] *= (@feats[:"1,#{feat}"] or 1)

@@ -29,7 +29,7 @@ class Model
     attr_accessor :feats, :lower_words, :non_abbrs
 
     def normalize(counter)
-        total = (counter.inject(0) { |s, i| s += i }).to_f
+        total = counter[0] + counter[1]
         counter.map! { |value| value / total }
     end
 
@@ -37,14 +37,15 @@ class Model
         probs = [@p0, @p1]
         feat = ''
         frag.features.each do |feat|
-            probs[0] *= (@feats[:"0,#{feat}"] or 1)
-            probs[1] *= (@feats[:"1,#{feat}"] or 1)
+            probs[0] *= (@feats[:"0,#{feat}"] or next)
+            probs[1] *= (@feats[:"1,#{feat}"] or next)
         end
         normalize(probs)
         frag.pred = probs[1]
     end
 
     def classify(doc)
+        frag = nil
         doc.frags.each do |frag|
             classify_single frag
         end
@@ -88,6 +89,7 @@ class Model
     end
 
     def featurize(doc)
+        frag = nil
         doc.frags.each do |frag|
             get_features(frag, self)
         end
@@ -108,6 +110,7 @@ class Doc
         curr_words = []
         lower_words, non_abbrs = {}, {};
 
+        line, word = '', ''
         text.lines.each do |line|
             # Deal with blank lines.
             if line.strip.empty?
@@ -144,6 +147,7 @@ class Doc
         sents, sent = [], []
         thresh = 0.5
 
+        frag = nil
         @frags.each do |frag|
             sent.push(frag.orig)
             if frag.pred > thresh or frag.ends_seg

@@ -20,13 +20,13 @@ end
 class Model
     # Initialize the model. feats, lower_words, and non_abbrs
     # indicate the locations of the respective Marshal dumps.
-    def initialize(feats="feats_s.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
+    def initialize(feats="feats_f.mar", lower_words="lower_words_f.mar", non_abbrs="non_abbrs_f.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
                 Marshal.load(f.read)
             end
         end
-        @p0, @p1 = @feats[:"0,<prior>"] ** 4, @feats[:"1,<prior>"] ** 4  
+        @p0, @p1 = @feats["0,<prior>"] ** 4, @feats["1,<prior>"] ** 4  
     end
 
     # Feats is a huge dictionary of feature probabilities.
@@ -43,8 +43,8 @@ class Model
         doc.frags.each do |frag|
             probs = [@p0, @p1]
             frag.features.each do |feat|
-                probs[0] *= (@feats[:"0,#{feat}"] or next)
-                probs[1] *= @feats[:"1,#{feat}"]
+                probs[0] *= (@feats["0,#{feat}"] or next)
+                probs[1] *= @feats["1,#{feat}"]
             end
             frag.pred = probs[1] / (probs[0] + probs[1])
         end
@@ -64,25 +64,25 @@ class Model
         w1 = (frag.cleaned.split.last or '')
         w2 = (frag.next.andand.first or '')
 
-        frag.features = [:"w1_#{w1}", :"w2_#{w2}", :"both_#{w1}_#{w2}"]
+        frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
         len1 = [10, w1.gsub(/\W/, '').length].min
 
         if not w2.empty? and w1.gsub(/\./, '').is_alphabetic? 
-            frag.features.push :"w1length_#{len1}"
+            frag.features.push "w1length_#{len1}"
             begin
-                frag.features.push :"w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
+                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
             rescue Exception => e
-                frag.features.push :"w1abbr_0"
+                frag.features.push "w1abbr_0"
             end
         end
 
         if not w2.empty? and w2.gsub(/\./, '').is_alphabetic?
-            frag.features.push :"w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
+            frag.features.push "w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
             begin
-                frag.features.push :"w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
+                frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
             rescue Exception => e
-                frag.features.push :"w2lower_0"
+                frag.features.push "w2lower_0"
             end
         end
     end
@@ -136,10 +136,7 @@ class Doc
     end
 
     def is_hyp(word)
-        return false if ['.', '?', '!'].none? {|punct| word.include?(punct)}
-        return true if ['.', '?', '!'].any? {|punct| word.end_with?(punct)}
-        return true if word.match(/.*[.!?]["')\]]}*$/)
-        return false
+        /.*[.!?]["')\]}]*$/ =~ word
     end
 
     def segment

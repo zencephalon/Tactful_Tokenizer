@@ -37,26 +37,19 @@ class Model
     # sentence fragment.
     def classify(doc)
         frag = nil
-        doc.frags.each do |frag|
-            classify_single frag
-        end
-    end
-
-    # Classify a single fragment.
-    def classify_single(frag)
-        probs = [@p0, @p1]
+        probs = []
         feat = ''
-        frag.features.each do |feat|
-            probs[0] *= (@feats[:"0,#{feat}"] or next)
-            probs[1] *= @feats[:"1,#{feat}"]
+        total = 0
+        doc.frags.each do |frag|
+            probs = [@p0, @p1]
+            frag.features.each do |feat|
+                probs[0] *= (@feats[:"0,#{feat}"] or next)
+                probs[1] *= @feats[:"1,#{feat}"]
+            end
+            frag.pred = probs[1] / (probs[0] + probs[1])
         end
-        frag.pred = normalize(probs)[1]
     end
 
-    def normalize(counter)
-        total = counter[0] + counter[1]
-        counter.map! { |value| value / total }
-    end
     # Finds the features in a text fragment of the form:
     # ... w1. (sb?) w2 ...
     # Features listed in rough order of importance:

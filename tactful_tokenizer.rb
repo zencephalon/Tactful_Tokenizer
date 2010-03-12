@@ -7,15 +7,19 @@ include WordTokenizer
 # Use inline C where necessary?
 
 String.class_eval do
+    # Simple regex to check if a string is alphabetic.
     def is_alphabetic?
         return !/[^A-Z]/i.match(self)
     end
+    # Simple regex to check if a string is in uppercase.
     def is_upper_case?
         return !/[^A-Z]/.match(self)
     end
 end
 
 class Model
+    # Initialize the model. feats, lower_words, and non_abbrs
+    # indicate the locations of the respective Marshal dumps.
     def initialize(feats="feats_s.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
@@ -25,13 +29,20 @@ class Model
         @p0, @p1 = @feats[:"0,<prior>"] ** 4, @feats[:"1,<prior>"] ** 4  
     end
 
+    # Feats is a huge dictionary of feature probabilities.
+    # lower_words and non_abbrs are word occurences counted logarithmically.
     attr_accessor :feats, :lower_words, :non_abbrs
 
-    def normalize(counter)
-        total = counter[0] + counter[1]
-        counter.map! { |value| value / total }
+    # Assign a prediction (probability, to be precise) to each
+    # sentence fragment.
+    def classify(doc)
+        frag = nil
+        doc.frags.each do |frag|
+            classify_single frag
+        end
     end
 
+    # Classify a single fragment.
     def classify_single(frag)
         probs = [@p0, @p1]
         feat = ''
@@ -42,13 +53,10 @@ class Model
         frag.pred = normalize(probs)[1]
     end
 
-    def classify(doc)
-        frag = nil
-        doc.frags.each do |frag|
-            classify_single frag
-        end
+    def normalize(counter)
+        total = counter[0] + counter[1]
+        counter.map! { |value| value / total }
     end
-
     # Finds the features in a text fragment of the form:
     # ... w1. (sb?) w2 ...
     # Features listed in rough order of importance:

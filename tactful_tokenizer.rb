@@ -17,6 +17,7 @@ String.class_eval do
     end
 end
 
+# A model stores normalized probabilities of different features occuring.
 class Model
     # Initialize the model. feats, lower_words, and non_abbrs
     # indicate the locations of the respective Marshal dumps.
@@ -46,6 +47,8 @@ class Model
     end
 
     # Assign a prediction (probability, to be precise) to each sentence fragment.
+    # For each feature in each fragment we hunt up the normalized probability and
+    # multiply. This is a fairly straightforward Bayesian probabilistic algorithm.
     def classify(doc)
         frag = nil
         probs = 1
@@ -97,11 +100,16 @@ class Model
     end
 end
 
+# A document represents the input text. It holds a list of fragments generated
+# from the text.
 class Doc
     attr_accessor :frags
 
     # Receives a text, which is then broken into fragments.
-    # A fragment ends in a sentence, or the end of the text.
+    # A fragment ends with a period, quesetion mark, or exclamation mark followed
+    # possibly by right handed punctuation like quotation marks or closing braces
+    # and trailing whitespace. Failing that, we'll accept something like "I hate cheese\n"
+    # No, it doesn't have a period, but it's pretty likely to be a sentence.
     def initialize(text)
         @frags = []
         res = nil
@@ -118,6 +126,8 @@ class Doc
         end
     end
 
+    # Segments the text. More accurately, it reassembles the fragments into sentences.
+    # We call something a sentence whenever it is more likely to be a sentence than not.
     def segment
         sents, sent = [], []
         thresh = 0.5
@@ -135,6 +145,12 @@ class Doc
     end
 end
 
+# A fragment is a potential sentence, but is based only on the existence of a period.
+# The text "Here in the U.S. Senate we prefer to devour our friends." will be split
+# into "Here in the U.S." and "Senate we prefer to devour our friends.", but will later
+# be correctly merged into a single sentence (because 'U.S.' and 'Senate' frequently
+# follow each other in sentences, according to the data model). The algorithm does
+# not employ any sort of "Hey, look, that fragment has no subject"-voodoo. If only.
 class Frag
     attr_accessor :orig, :next, :ends_seg, :cleaned, :pred, :features
     def initialize(orig='', ends_seg=false)
@@ -144,7 +160,8 @@ class Frag
         @ends_seg = ends_seg
     end
 
-    # Normalizes numbers and discards ambiguous punctuation.
+    # Normalizes numbers and discards ambiguous punctuation. And then splits into an
+    # array, because realistically only the last and first words are ever accessed.
     def clean(s)
         @cleaned = String.new(s)
         tokenize(@cleaned)

@@ -37,9 +37,8 @@ class Model
     # sentence fragment.
     def classify(doc)
         frag = nil
-        probs = []
+        probs = 1
         feat = ''
-        total = 0
         doc.frags.each do |frag|
             probs = @p0
             frag.features.each do |feat|
@@ -67,7 +66,7 @@ class Model
 
         if not w2.empty? and w1.chop.is_alphabetic? 
             frag.features.push "w1length_#{[10, w1.length].min}"
-            frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
+            frag.features.push "w1abbr_#{model.non_abbrs[w1.chop]}"
         end
 
         if not w2.empty? and w2.chop.is_alphabetic?

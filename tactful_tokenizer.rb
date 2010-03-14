@@ -13,7 +13,7 @@ String.class_eval do
     end
     # Simple regex to check if a string is in uppercase.
     def is_upper_case?
-        return !/[^A-Z]/.match(self)
+        self == self.upcase ? 'True' : 'False'
     end
 end
 
@@ -78,7 +78,7 @@ class Model
         end
 
         if not w2.empty? and w2.chop.is_alphabetic?
-            frag.features.push "w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
+            frag.features.push "w2cap_#{w2[0].is_upper_case?}"
             begin
                 frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
             rescue Exception => e
@@ -115,7 +115,7 @@ class Doc
                 frag = Frag.new(res[1])
                 frag.ends_seg = true
             end
-            @frags.last.andand.next = frag.cleaned.split.first
+            @frags.last.next = frag.cleaned.split.first unless @frags.empty?
             @frags.push frag
         end
     end

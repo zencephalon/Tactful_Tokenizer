@@ -68,7 +68,7 @@ class Model
 
         len1 = [10, w1.length].min
 
-        if not w2.empty? and w1.gsub(/\./, '').is_alphabetic? 
+        if not w2.empty? and w1.chop.is_alphabetic? 
             frag.features.push "w1length_#{len1}"
             begin
                 frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
@@ -77,7 +77,7 @@ class Model
             end
         end
 
-        if not w2.empty? and w2.gsub(/\./, '').is_alphabetic?
+        if not w2.empty? and w2.chop.is_alphabetic?
             frag.features.push "w2cap_#{w2[0].is_upper_case?.to_s.capitalize}"
             begin
                 frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
@@ -113,10 +113,6 @@ class Doc
             @frags.last.andand.next = frag.cleaned.split.first
             @frags.push frag
         end
-    end
-
-    def is_hyp(word)
-        /.*[.!?]["')\]}]*$/ =~ word
     end
 
     def segment

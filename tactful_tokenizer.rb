@@ -62,11 +62,11 @@ class Model
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
         w1 = (frag.cleaned.split.last or '')
-        w2 = (frag.next.andand.first or '')
+        w2 = (frag.next or '')
 
         frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
-        len1 = [10, w1.gsub(/\W/, '').length].min
+        len1 = [10, w1.length].min
 
         if not w2.empty? and w1.gsub(/\./, '').is_alphabetic? 
             frag.features.push "w1length_#{len1}"
@@ -106,31 +106,12 @@ class Doc
     attr_accessor :frags
     def initialize(text)
         @frags = []
-        curr_words = []
+        res = nil
 
-        line, word = '', ''
-        text.lines.each do |line|
-            # Deal with blank lines.
-            if line.strip.empty?
-                t = curr_words.join(' ')
-                frag = Frag.new(t, true)
-                @frags.last.andand.next = frag.cleaned.split
-                @frags.push frag
-
-                curr_words = []
-            end
-            line.split.each do |word|
-                curr_words.push(word)
-
-                if is_hyp word
-                    t = curr_words.join(' ')
-                    frag = Frag.new(t)
-                    @frags.last.andand.next = frag.cleaned.split
-                    @frags.push frag
-
-                    curr_words = []
-                end
-            end
+        text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*$)/) do |res|
+            frag = Frag.new(res.join(''))
+            @frags.last.andand.next = frag.cleaned.split.first
+            @frags.push frag
         end
     end
 

@@ -20,7 +20,7 @@ end
 class Model
     # Initialize the model. feats, lower_words, and non_abbrs
     # indicate the locations of the respective Marshal dumps.
-    def initialize(feats="feats_f.mar", lower_words="lower_words_f.mar", non_abbrs="non_abbrs_f.mar")
+    def initialize(feats="feats_f.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
                 Marshal.load(f.read)
@@ -66,24 +66,14 @@ class Model
 
         frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
-        len1 = [10, w1.length].min
-
         if not w2.empty? and w1.chop.is_alphabetic? 
-            frag.features.push "w1length_#{len1}"
-            begin
-                frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
-            rescue Exception => e
-                frag.features.push "w1abbr_0"
-            end
+            frag.features.push "w1length_#{[10, w1.length].min}"
+            frag.features.push "w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}"
         end
 
         if not w2.empty? and w2.chop.is_alphabetic?
             frag.features.push "w2cap_#{w2[0].is_upper_case?}"
-            begin
-                frag.features.push "w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}"
-            rescue Exception => e
-                frag.features.push "w2lower_0"
-            end
+            frag.features.push "w2lower_#{model.lower_words[w2.downcase]}"
         end
     end
 

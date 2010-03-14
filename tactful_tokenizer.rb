@@ -78,7 +78,7 @@ class Model
     # * w2lower: logarithmiccount of w2 occuring lowercased.
     # * w1w2upper: true if w1 and w2 are capitalized.
     def get_features(frag, model)
-        w1 = (frag.cleaned.split.last or '')
+        w1 = (frag.cleaned.last or '')
         w2 = (frag.next or '')
 
         frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
@@ -99,18 +99,21 @@ end
 
 class Doc
     attr_accessor :frags
+
+    # Receives a text, which is then broken into fragments.
+    # A fragment ends in a sentence, or the end of the text.
     def initialize(text)
         @frags = []
         res = nil
 
-        text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*$)/) do |res|
+        text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*)\s*/) do |res|
             if res[1].nil?
                 frag = Frag.new(res[0])
             else
                 frag = Frag.new(res[1])
                 frag.ends_seg = true
             end
-            @frags.last.next = frag.cleaned.split.first unless @frags.empty?
+            @frags.last.next = frag.cleaned.first unless @frags.empty?
             @frags.push frag
         end
     end
@@ -148,5 +151,6 @@ class Frag
         @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
         @cleaned.gsub!(/[^a-zA-Z0-9,.;:<>\-'\/$% ]/, '')
         @cleaned.gsub!('--', ' ')
+        @cleaned = @cleaned.split
     end
 end

@@ -109,7 +109,12 @@ class Doc
         res = nil
 
         text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*$)/) do |res|
-            frag = Frag.new(res.join(''))
+            if res[1].nil?
+                frag = Frag.new(res[0])
+            else
+                frag = Frag.new(res[1])
+                frag.ends_seg = true
+            end
             @frags.last.andand.next = frag.cleaned.split.first
             @frags.push frag
         end

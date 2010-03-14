@@ -107,7 +107,6 @@ class Doc
     def initialize(text)
         @frags = []
         curr_words = []
-        lower_words, non_abbrs = {}, {};
 
         line, word = '', ''
         text.lines.each do |line|

@@ -1,17 +1,13 @@
 module WordTokenizer
     @@tokenize_regexps = [
         # Uniform Quotes
-        [/''/, '"'],
-        [/``/, '"'],
+        [/''|``/, '"'],
 
         # Separate punctuation (except for periods) from words.
         [/(^|\s)(')/, '\1\2'],
         [/(?=[\("`{\[:;&#*@])(.)/, '\1 '],
 
-        [/(.)(?=[?!\)";}\]*:@'])/, '\1 '],
-        [/(?=[\)}\]])(.)/, '\1 '],
-        [/(.)(?=[({\[])/, '\1 '],
-        [/((^|\s)-)(?=[^-])/, '\1 '],
+        [/(.)(?=[?!\)";}\]*:@'])|(?=[\)}\]])(.)|(.)(?=[({\[])|((^|\s)-)(?=[^-])/, '\1 '],
 
         # Treat double-hyphen as a single token.
         [/([^-])(--+)([^-])/, '\1 \2 \3'],
@@ -44,9 +40,8 @@ module WordTokenizer
         [/N 'T( |$)/, " N'T\\1"],
 
         # Treebank tokenizer special words
-        [/([Cc])annot/, '\1an not'],
+        [/([Cc])annot/, '\1an not']
 
-        [/\s+/, ' ']
     ];
 
     def tokenize(s)

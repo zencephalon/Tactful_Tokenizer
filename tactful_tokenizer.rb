@@ -2,9 +2,9 @@ require "word_tokenizer.rb"
 require "andand"
 include WordTokenizer
 
-# TODO: More documentation.
 ####### Performance TODOs.
-# Use inline C where necessary?
+# TODO: Use inline C where necessary?
+# TODO: Use RE2 regexp extension.
 
 String.class_eval do
     # Simple regex to check if a string is alphabetic.
@@ -115,11 +115,10 @@ class Doc
         res = nil
 
         text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*)\s*/) do |res|
-            if res[1].nil?
+            if res[0]
                 frag = Frag.new(res[0])
             else
-                frag = Frag.new(res[1])
-                frag.ends_seg = true
+                frag = Frag.new(res[1], true)
             end
             @frags.last.next = frag.cleaned.first unless @frags.empty?
             @frags.push frag

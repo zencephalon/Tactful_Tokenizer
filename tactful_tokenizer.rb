@@ -20,13 +20,13 @@ end
 class Model
     # Initialize the model. feats, lower_words, and non_abbrs
     # indicate the locations of the respective Marshal dumps.
-    def initialize(feats="feats_f.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
+    def initialize(feats="feats_s.mar", lower_words="lower_words_s.mar", non_abbrs="non_abbrs_s.mar")
         @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
             File.open(file) do |f|
                 Marshal.load(f.read)
             end
         end
-        @p0, @p1 = @feats["0,<prior>"] ** 4, @feats["1,<prior>"] ** 4  
+        @p0 = @feats["<prior>"] ** 4  
     end
 
     # Feats is a huge dictionary of feature probabilities.
@@ -41,12 +41,11 @@ class Model
         feat = ''
         total = 0
         doc.frags.each do |frag|
-            probs = [@p0, @p1]
+            probs = @p0
             frag.features.each do |feat|
-                probs[0] *= (@feats["0,#{feat}"] or next)
-                probs[1] *= @feats["1,#{feat}"]
+                probs *= @feats[feat]
             end
-            frag.pred = probs[1] / (probs[0] + probs[1])
+            frag.pred = probs / (probs + 1)
         end
     end
 

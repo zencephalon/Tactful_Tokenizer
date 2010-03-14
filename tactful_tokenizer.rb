@@ -29,12 +29,23 @@ class Model
         @p0 = @feats["<prior>"] ** 4  
     end
 
-    # Feats is a huge dictionary of feature probabilities.
-    # lower_words and non_abbrs are word occurences counted logarithmically.
+    # feats = {feature => normalized probability of feature}
+    # lower_words = {token => log count of occurences in lower case}
+    # non_abbrs = {token => log count of occurences when not an abbrv.}
     attr_accessor :feats, :lower_words, :non_abbrs
 
-    # Assign a prediction (probability, to be precise) to each
-    # sentence fragment.
+    # This function is the only one that'll end up being used.
+    # m = Model.new
+    # m.tokenize_text("Hey, are these two sentences? I bet they should be.")
+    # => ["Hey, are these two sentences?", "I bet they should be."]
+    def tokenize_text(text)
+        data = Doc.new(text)
+        featurize(data)
+        classify(data)
+        return data.segment
+    end
+
+    # Assign a prediction (probability, to be precise) to each sentence fragment.
     def classify(doc)
         frag = nil
         probs = 1
@@ -45,6 +56,14 @@ class Model
                 probs *= @feats[feat]
             end
             frag.pred = probs / (probs + 1)
+        end
+    end
+
+    # Get the features of every fragment.
+    def featurize(doc)
+        frag = nil
+        doc.frags.each do |frag|
+            get_features(frag, self)
         end
     end
 
@@ -64,29 +83,17 @@ class Model
 
         frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
-        if not w2.empty? and w1.chop.is_alphabetic? 
-            frag.features.push "w1length_#{[10, w1.length].min}"
-            frag.features.push "w1abbr_#{model.non_abbrs[w1.chop]}"
-        end
+        if not w2.empty?
+            if w1.chop.is_alphabetic? 
+                frag.features.push "w1length_#{[10, w1.length].min}"
+                frag.features.push "w1abbr_#{model.non_abbrs[w1.chop]}"
+            end
 
-        if not w2.empty? and w2.chop.is_alphabetic?
-            frag.features.push "w2cap_#{w2[0].is_upper_case?}"
-            frag.features.push "w2lower_#{model.lower_words[w2.downcase]}"
+            if w2.chop.is_alphabetic?
+                frag.features.push "w2cap_#{w2[0].is_upper_case?}"
+                frag.features.push "w2lower_#{model.lower_words[w2.downcase]}"
+            end
         end
-    end
-
-    def featurize(doc)
-        frag = nil
-        doc.frags.each do |frag|
-            get_features(frag, self)
-        end
-    end
-
-    def tokenize_text(text)
-        data = Doc.new(text)
-        featurize(data)
-        classify(data)
-        return data.segment
     end
 end
 

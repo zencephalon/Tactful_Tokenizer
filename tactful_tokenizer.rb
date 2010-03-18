@@ -110,18 +110,23 @@ class Doc
     # possibly by right handed punctuation like quotation marks or closing braces
     # and trailing whitespace. Failing that, we'll accept something like "I hate cheese\n"
     # No, it doesn't have a period, but it's pretty likely to be a sentence.
+    #
+    # Input assumption: Single paragraph, ends in \n.
     def initialize(text)
         @frags = []
         res = nil
-
-        text.scan(/(.*?\w[.!?]["')\]}]*)\s+|(.*)\s*/) do |res|
-            if res[0]
-                frag = Frag.new(res[0])
-            else
-                frag = Frag.new(res[1], true)
+        puts "Hey!"
+        puts text.inspect
+        text.each_line do |line|
+            unless line.strip.empty?
+                line.split(/(.*?[.!?](?>["')\]}]|(?><.*>))*[\s])/).each do |res|
+                    unless res.strip.empty?
+                        frag = Frag.new(res)
+                        @frags.last.next = frag.cleaned.first unless @frags.empty?
+                        @frags.push frag
+                    end
+                end
             end
-            @frags.last.next = frag.cleaned.first unless @frags.empty?
-            @frags.push frag
         end
     end
 
@@ -136,7 +141,7 @@ class Doc
             sent.push(frag.orig)
             if frag.pred > thresh or frag.ends_seg
                 break if frag.orig.nil?
-                sents.push(sent.join(' '))
+                sents.push(sent.join(''))
                 sent = []
             end
         end

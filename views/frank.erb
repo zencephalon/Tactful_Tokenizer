@@ -1,0 +1,9 @@
+<p>
+And now, the end is here
+And so I face the final curtain
+My friend, I'll say it clear
+I'll state my case, of which I'm certain
+I've lived a life that's full
+I traveled each and ev'ry highway
+And more, much more than this, I did it my way
+</p>

@@ -1,0 +1,27 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>segment (TactfulTokenizer::Doc)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 165</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">segment</span>
+            <span class="ruby-identifier">sents</span>, <span class="ruby-identifier">sent</span> = [], []
+            <span class="ruby-identifier">thresh</span> = <span class="ruby-value">0</span><span class="ruby-value">.5</span>
+
+            <span class="ruby-identifier">frag</span> = <span class="ruby-keyword kw">nil</span>
+            <span class="ruby-ivar">@frags</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">frag</span><span class="ruby-operator">|</span>
+                <span class="ruby-identifier">sent</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">frag</span>.<span class="ruby-identifier">orig</span>)
+                <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">pred</span> <span class="ruby-operator">&gt;</span> <span class="ruby-identifier">thresh</span>
+                    <span class="ruby-keyword kw">break</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">orig</span>.<span class="ruby-identifier">nil?</span>
+                    <span class="ruby-identifier">sents</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">sent</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">''</span>).<span class="ruby-identifier">strip</span>)
+                    <span class="ruby-identifier">sent</span> = []
+                <span class="ruby-keyword kw">end</span>
+            <span class="ruby-keyword kw">end</span>
+            <span class="ruby-identifier">sents</span>
+        <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

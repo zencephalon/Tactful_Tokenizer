@@ -1,0 +1,19 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>clean (Frag)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 171</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">clean</span>(<span class="ruby-identifier">s</span>)
+        <span class="ruby-ivar">@cleaned</span> = <span class="ruby-constant">String</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">s</span>)
+        <span class="ruby-identifier">tokenize</span>(<span class="ruby-ivar">@cleaned</span>)
+        <span class="ruby-ivar">@cleaned</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp re">/[.,\d]*\d/</span>, <span class="ruby-value str">'&lt;NUM&gt;'</span>)
+        <span class="ruby-ivar">@cleaned</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-regexp re">/[^a-zA-Z0-9,.;:&lt;&gt;\-'\/$% ]/</span>, <span class="ruby-value str">''</span>)
+        <span class="ruby-ivar">@cleaned</span>.<span class="ruby-identifier">gsub!</span>(<span class="ruby-value str">'--'</span>, <span class="ruby-value str">' '</span>)
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

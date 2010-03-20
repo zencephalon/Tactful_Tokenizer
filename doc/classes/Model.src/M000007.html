@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>get_features (Model)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 62</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">get_features</span>(<span class="ruby-identifier">frag</span>, <span class="ruby-identifier">model</span>)
+        <span class="ruby-identifier">w1</span> = (<span class="ruby-identifier">frag</span>.<span class="ruby-identifier">cleaned</span>.<span class="ruby-identifier">split</span>.<span class="ruby-identifier">last</span> <span class="ruby-keyword kw">or</span> <span class="ruby-value str">''</span>)
+        <span class="ruby-identifier">w2</span> = (<span class="ruby-identifier">frag</span>.<span class="ruby-identifier">next</span>.<span class="ruby-identifier">andand</span>.<span class="ruby-identifier">first</span> <span class="ruby-keyword kw">or</span> <span class="ruby-value str">''</span>)
+
+        <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span> = [<span class="ruby-node">&quot;w1_#{w1}&quot;</span><span class="ruby-node">&quot;w1_#{w1}&quot;</span>, <span class="ruby-node">&quot;w2_#{w2}&quot;</span><span class="ruby-node">&quot;w2_#{w2}&quot;</span>, <span class="ruby-node">&quot;both_#{w1}_#{w2}&quot;</span><span class="ruby-node">&quot;both_#{w1}_#{w2}&quot;</span>]
+
+        <span class="ruby-identifier">len1</span> = [<span class="ruby-value">10</span>, <span class="ruby-identifier">w1</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/\W/</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">length</span>].<span class="ruby-identifier">min</span>
+
+        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">not</span> <span class="ruby-identifier">w2</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-keyword kw">and</span> <span class="ruby-identifier">w1</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/\./</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">is_alphabetic?</span> 
+            <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;w1length_#{len1}&quot;</span><span class="ruby-node">&quot;w1length_#{len1}&quot;</span>
+            <span class="ruby-keyword kw">begin</span>
+                <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}&quot;</span><span class="ruby-node">&quot;w1abbr_#{Math.log(1 + model.non_abbrs[w1.chop]).to_i}&quot;</span>
+            <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+                <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">:&quot;w1abbr_0&quot;</span>
+            <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+
+        <span class="ruby-keyword kw">if</span> <span class="ruby-keyword kw">not</span> <span class="ruby-identifier">w2</span>.<span class="ruby-identifier">empty?</span> <span class="ruby-keyword kw">and</span> <span class="ruby-identifier">w2</span>.<span class="ruby-identifier">gsub</span>(<span class="ruby-regexp re">/\./</span>, <span class="ruby-value str">''</span>).<span class="ruby-identifier">is_alphabetic?</span>
+            <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;w2cap_#{w2[0].is_upper_case?.to_s.capitalize}&quot;</span><span class="ruby-node">&quot;w2cap_#{w2[0].is_upper_case?.to_s.capitalize}&quot;</span>
+            <span class="ruby-keyword kw">begin</span>
+                <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-node">&quot;w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}&quot;</span><span class="ruby-node">&quot;w2lower_#{Math.log(1 + model.lower_words[w2.downcase]).to_i}&quot;</span>
+            <span class="ruby-keyword kw">rescue</span> <span class="ruby-constant">Exception</span> =<span class="ruby-operator">&gt;</span> <span class="ruby-identifier">e</span>
+                <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">features</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">:&quot;w2lower_0&quot;</span>
+            <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

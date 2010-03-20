@@ -1,0 +1,24 @@
+= TactfulTokenizer
+
+TactfulTokenizer is a Ruby library for high quality sentence
+tokenization. It uses a Naive Bayesian statistical model, and
+is based on Splitta[http://code.google.com/p/splitta/]. But 
+has support for '?' and '!' as well as primitive handling of 
+XHTML markup. Better support for XHTML parsing is coming shortly.
+
+== Example usage:
+
+ require "tactful_tokenizer"
+ m = TactfulTokenizer::Model.new
+ m.tokenize_text("Here in the U.S. Senate we prefer to eat our friends. Is it easier that way, really? Yes.")
+ #=> ["Here in the U.S. Senate we prefer to eat our friends.", "Is it easier that way, really?", "Yes."]
+
+The input text is expected to consist of paragraphs delimited
+by line breaks.
+
+== Installation:
+git clone 
+gem install andand
+
+Author:: Matthew Bunday (mailto:mkbunday@gmail.com)
+License:: GNU General Public License v3

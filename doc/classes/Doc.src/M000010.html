@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+  <title>new (Doc)</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
+</head>
+<body class="standalone-code">
+  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 106</span>
+    <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">text</span>)
+        <span class="ruby-ivar">@frags</span> = []
+        <span class="ruby-identifier">curr_words</span> = []
+        <span class="ruby-identifier">lower_words</span>, <span class="ruby-identifier">non_abbrs</span> = {}, {};
+
+        <span class="ruby-identifier">line</span>, <span class="ruby-identifier">word</span> = <span class="ruby-value str">''</span>, <span class="ruby-value str">''</span>
+        <span class="ruby-identifier">text</span>.<span class="ruby-identifier">lines</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">line</span><span class="ruby-operator">|</span>
+            <span class="ruby-comment cmt"># Deal with blank lines.</span>
+            <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">line</span>.<span class="ruby-identifier">strip</span>.<span class="ruby-identifier">empty?</span>
+                <span class="ruby-identifier">t</span> = <span class="ruby-identifier">curr_words</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">' '</span>)
+                <span class="ruby-identifier">frag</span> = <span class="ruby-constant">Frag</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">t</span>, <span class="ruby-keyword kw">true</span>)
+                <span class="ruby-ivar">@frags</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">andand</span>.<span class="ruby-identifier">next</span> = <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">cleaned</span>.<span class="ruby-identifier">split</span>
+                <span class="ruby-ivar">@frags</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">frag</span>
+
+                <span class="ruby-identifier">curr_words</span> = []
+            <span class="ruby-keyword kw">end</span>
+            <span class="ruby-identifier">line</span>.<span class="ruby-identifier">split</span>.<span class="ruby-identifier">each</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">word</span><span class="ruby-operator">|</span>
+                <span class="ruby-identifier">curr_words</span>.<span class="ruby-identifier">push</span>(<span class="ruby-identifier">word</span>)
+
+                <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">is_hyp</span> <span class="ruby-identifier">word</span>
+                    <span class="ruby-identifier">t</span> = <span class="ruby-identifier">curr_words</span>.<span class="ruby-identifier">join</span>(<span class="ruby-value str">' '</span>)
+                    <span class="ruby-identifier">frag</span> = <span class="ruby-constant">Frag</span>.<span class="ruby-identifier">new</span>(<span class="ruby-identifier">t</span>)
+                    <span class="ruby-ivar">@frags</span>.<span class="ruby-identifier">last</span>.<span class="ruby-identifier">andand</span>.<span class="ruby-identifier">next</span> = <span class="ruby-identifier">frag</span>.<span class="ruby-identifier">cleaned</span>.<span class="ruby-identifier">split</span>
+                    <span class="ruby-ivar">@frags</span>.<span class="ruby-identifier">push</span> <span class="ruby-identifier">frag</span>
+
+                    <span class="ruby-identifier">curr_words</span> = []
+                <span class="ruby-keyword kw">end</span>
+            <span class="ruby-keyword kw">end</span>
+        <span class="ruby-keyword kw">end</span>
+    <span class="ruby-keyword kw">end</span></pre>
+</body>
+</html>

@@ -10,8 +10,8 @@ XHTML markup. Better support for XHTML parsing is coming shortly.
 
  require "tactful_tokenizer"
  m = TactfulTokenizer::Model.new
- m.tokenize_text("Here in the U.S. Senate we prefer to eat our friends. Is it easier that way, really? <em>Yes.</em> <em>Maybe</em>?")
- #=> ["Here in the U.S. Senate we prefer to eat our friends.", "Is it easier that way, really?", "<em>Yes.</em>", "<em>Maybe</em>?"]
+ m.tokenize_text("Here in the U.S. Senate we prefer to eat our friends. Is it easier that way? <em>Yes.</em> <em>Maybe</em>!")
+ #=> ["Here in the U.S. Senate we prefer to eat our friends.", "Is it easier that way?", "<em>Yes.</em>", "<em>Maybe</em>!"]
 
 The input text is expected to consist of paragraphs delimited
 by line breaks.

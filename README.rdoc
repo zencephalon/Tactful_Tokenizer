@@ -6,7 +6,7 @@ is based on Splitta[http://code.google.com/p/splitta/]. But
 has support for '?' and '!' as well as primitive handling of 
 XHTML markup. Better support for XHTML parsing is coming shortly.
 
-== Example usage:
+== Usage
 
  require "tactful_tokenizer"
  m = TactfulTokenizer::Model.new
@@ -16,10 +16,11 @@ XHTML markup. Better support for XHTML parsing is coming shortly.
 The input text is expected to consist of paragraphs delimited
 by line breaks.
 
-== Installation:
+== Installation
  git clone http://github.com/SlyShy/Tactful_Tokenizer.git
  gem install andand
 
-== License:
+== Author
 
-GNU GPL v3[http://www.gnu.org/licenses/gpl.html]
+Copyright (c) 2010 Matthew Bunday. All rights reserved.
+Released under the {GNU GPL v3}[http://www.gnu.org/licenses/gpl.html].

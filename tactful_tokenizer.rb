@@ -4,7 +4,7 @@
 # has support for '?' and '!' as well as primitive handling of 
 # XHTML markup. Better support for XHTML parsing is coming shortly.
 #
-# == Example usage:
+# Example usage:
 #
 #  require "tactful_tokenizer"
 #  m = TactfulTokenizer::Model.new
@@ -13,10 +13,6 @@
 #
 # The input text is expected to consist of paragraphs delimited
 # by line breaks.
-#
-# == Installation:
-# git clone 
-# gem install andand
 #
 # Author:: Matthew Bunday (mailto:mkbunday@gmail.com)
 # License:: GNU General Public License v3

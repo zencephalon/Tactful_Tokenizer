@@ -17,8 +17,9 @@ The input text is expected to consist of paragraphs delimited
 by line breaks.
 
 == Installation:
-git clone 
-gem install andand
+ git clone http://github.com/SlyShy/Tactful_Tokenizer.git
+ gem install andand
 
-Author:: Matthew Bunday (mailto:mkbunday@gmail.com)
-License:: GNU General Public License v3
+== License:
+
+GNU GPL v3[http://www.gnu.org/licenses/gpl.html]

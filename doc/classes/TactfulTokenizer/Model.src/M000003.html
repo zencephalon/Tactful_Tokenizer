@@ -7,8 +7,8 @@
   <link rel="stylesheet" href="../../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 54</span>
-        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">feats</span>=<span class="ruby-value str">&quot;feats_fs.mar&quot;</span>, <span class="ruby-identifier">lower_words</span>=<span class="ruby-value str">&quot;lower_words_s.mar&quot;</span>, <span class="ruby-identifier">non_abbrs</span>=<span class="ruby-value str">&quot;non_abbrs_s.mar&quot;</span>)
+  <pre><span class="ruby-comment cmt"># File tactful_tokenizer.rb, line 53</span>
+        <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">initialize</span>(<span class="ruby-identifier">feats</span>=<span class="ruby-value str">&quot;models/features.mar&quot;</span>, <span class="ruby-identifier">lower_words</span>=<span class="ruby-value str">&quot;models/lower_words.mar&quot;</span>, <span class="ruby-identifier">non_abbrs</span>=<span class="ruby-value str">&quot;models/non_abbrs.mar&quot;</span>)
             <span class="ruby-ivar">@feats</span>, <span class="ruby-ivar">@lower_words</span>, <span class="ruby-ivar">@non_abbrs</span> = [<span class="ruby-identifier">feats</span>, <span class="ruby-identifier">lower_words</span>, <span class="ruby-identifier">non_abbrs</span>].<span class="ruby-identifier">map</span> <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">file</span><span class="ruby-operator">|</span>
                 <span class="ruby-constant">File</span>.<span class="ruby-identifier">open</span>(<span class="ruby-identifier">file</span>) <span class="ruby-keyword kw">do</span> <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span>
                     <span class="ruby-constant">Marshal</span>.<span class="ruby-identifier">load</span>(<span class="ruby-identifier">f</span>.<span class="ruby-identifier">read</span>)

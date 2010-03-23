@@ -18,7 +18,6 @@
 # License:: GNU General Public License v3
 
 require "word_tokenizer.rb"
-require "andand"
 include WordTokenizer
 
 #--

@@ -17,8 +17,7 @@ The input text is expected to consist of paragraphs delimited
 by line breaks.
 
 == Installation
- git clone http://github.com/SlyShy/Tactful_Tokenizer.git
- gem install andand
+  gem install tactful_tokenizer
 
 == Author
 

@@ -49,7 +49,7 @@ module TactfulTokenizer
 
         # Initialize the model. feats, lower_words, and non_abbrs
         # indicate the locations of the respective Marshal dumps.
-        def initialize(feats="models/features.mar", lower_words="models/lower_words.mar", non_abbrs="models/non_abbrs.mar")
+        def initialize(feats="#{File.dirname(__FILE__)}/models/features.mar", lower_words="#{File.dirname(__FILE__)}/models/lower_words.mar", non_abbrs="#{File.dirname(__FILE__)}/models/non_abbrs.mar")
             @feats, @lower_words, @non_abbrs = [feats, lower_words, non_abbrs].map do |file|
                 File.open(file) do |f|
                     Marshal.load(f.read)

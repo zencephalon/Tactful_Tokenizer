@@ -1,0 +1,12 @@
+require 'rubygems'
+require 'rake'
+require 'echoe'
+
+Echoe.new('tactful_tokenizer', '0.0.1') do |p|
+    p.description    = "A high accuracy naive bayesian sentence tokenizer based on Splitta."
+    p.url            = "http://github.com/SlyShy/Tactful_Tokenizer"
+    p.author         = "Matthew Bunday"
+    p.email          = "mkbunday @nospam@ gmail.com"
+    p.ignore_pattern = ["tmp/*", "script/*"]
+    p.development_dependencies = []
+end

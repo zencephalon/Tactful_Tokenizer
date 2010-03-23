@@ -1,0 +1,8 @@
+Manifest
+README.rdoc
+Rakefile
+lib/models/features.mar
+lib/models/lower_words.mar
+lib/models/non_abbrs.mar
+lib/tactful_tokenizer.rb
+lib/word_tokenizer.rb

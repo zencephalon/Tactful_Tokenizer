@@ -78,9 +78,7 @@ module TactfulTokenizer
         # For each feature in each fragment we hunt up the normalized probability and
         # multiply. This is a fairly straightforward Bayesian probabilistic algorithm.
         def classify(doc)
-            frag = nil
-            probs = 1
-            feat = ''
+            frag, probs, feat = nil, nil, nil
             doc.frags.each do |frag|
                 probs = @p0
                 frag.features.each do |feat|
@@ -141,8 +139,6 @@ module TactfulTokenizer
         def initialize(text)
             @frags = []
             res = nil
-            puts "Hey!"
-            puts text.inspect
             text.each_line do |line|
                 unless line.strip.empty?
                     line.split(/(.*?[.!?](?:["')\]}]|(?:<.*>))*[\s])/).each do |res|

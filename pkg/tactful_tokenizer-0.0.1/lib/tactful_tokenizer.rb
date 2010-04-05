@@ -115,13 +115,11 @@ module TactfulTokenizer
 
             if not w2.empty?
                 if w1.chop.is_alphabetic? 
-                    frag.features.push "w1length_#{[10, w1.length].min}"
-                    frag.features.push "w1abbr_#{model.non_abbrs[w1.chop]}"
+                    frag.features.push "w1length_#{[10, w1.length].min}", "w1abbr_#{model.non_abbrs[w1.chop]}"
                 end
 
                 if w2.chop.is_alphabetic?
-                    frag.features.push "w2cap_#{w2[0].is_upper_case?}"
-                    frag.features.push "w2lower_#{model.lower_words[w2.downcase]}"
+                    frag.features.push "w2cap_#{w2[0].is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
                 end
             end
         end

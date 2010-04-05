@@ -6,3 +6,7 @@ lib/models/lower_words.mar
 lib/models/non_abbrs.mar
 lib/tactful_tokenizer.rb
 lib/word_tokenizer.rb
+test/sample.txt
+test/test.rb
+test/test_out.txt
+test/verification_out.txt

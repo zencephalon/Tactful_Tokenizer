@@ -117,7 +117,7 @@ module TactfulTokenizer
                 end
 
                 if w2.chop.is_alphabetic?
-                    frag.features.push "w2cap_#{w2[0].is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
+                    frag.features.push "w2cap_#{w2[0].chr.is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
                 end
             end
         end

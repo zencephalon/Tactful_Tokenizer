@@ -16,7 +16,7 @@
 #
 # Author:: Matthew Bunday (mailto:mkbunday@gmail.com)
 # License:: GNU General Public License v3
-
+# -*- encoding : utf-8 -*-
 require "word_tokenizer.rb"
 include WordTokenizer
 

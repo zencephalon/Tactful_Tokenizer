@@ -6,6 +6,8 @@ is based on Splitta[http://code.google.com/p/splitta/], but
 has support for '?' and '!' as well as primitive handling of 
 XHTML markup. Better support for XHTML parsing is coming shortly.
 
+Additionally supports unicode text tokenization.
+
 == Usage
 
  require "tactful_tokenizer"

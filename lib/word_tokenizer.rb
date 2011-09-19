@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 module WordTokenizer
     @@tokenize_regexps = [
         # Uniform Quotes
@@ -20,7 +21,7 @@ module WordTokenizer
         [/\.\s\.\s\./, '...'],
 
         # Separate "No.6"
-        [/([a-zA-Z]\.)(\d+)/, '\1 \2'],
+        [/([\W]\.)(\d+)/, '\1 \2'],
 
         # Separate words from ellipses
         [/([^\.]|^)(\.{2,})(.?)/, '\1 \2 \3'],
@@ -32,8 +33,8 @@ module WordTokenizer
         # Fix %, $, &
         [/(\d)%/, '\1 %'],
         [/\$(\.?\d)/, '$ \1'],
-        [/(\w)& (\w)/, '\1&\2'],
-        [/(\w\w+)&(\w\w+)/, '\1 & \2'],
+        [/(\W)& (\W)/, '\1&\2'],
+        [/(\W\W+)&(\W\W+)/, '\1 & \2'],
 
         # Fix (n 't) -> ( n't)
         [/n 't( |$)/, " n't\\1"],

@@ -25,7 +25,6 @@ include WordTokenizer
 # TODO: Use inline C where necessary?
 # TODO: Use RE2 regexp extension.
 #++
-require "word_tokenizer.rb"
 module TactfulTokenizer
 
     # Basic String extensions.
@@ -33,7 +32,7 @@ module TactfulTokenizer
 
         # Simple regex to check if a string is alphabetic.
         def is_alphabetic?
-            return /[\W\d]/.match(self)
+            return /[\p{Word}\d]/u.match(self)
         end
 
         # Check for upper case.
@@ -196,7 +195,7 @@ module TactfulTokenizer
             @cleaned = String.new(s)
             tokenize(@cleaned)
             @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
-            @cleaned.gsub!(/[^\W\d\s,!?.;:<>\-'\/$% ]/, '')
+            @cleaned.gsub!(/[^\p{Word}\d\s,!?.;:<>\-'\/$% ]/u, '')
             @cleaned.gsub!('--', ' ')
             @cleaned = @cleaned.split
         end

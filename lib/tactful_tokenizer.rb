@@ -25,6 +25,8 @@ include WordTokenizer
 # TODO: Use inline C where necessary?
 # TODO: Use RE2 regexp extension.
 #++
+module TactfulTokenizer
+
     # Basic String extensions.
     String.class_eval do
 

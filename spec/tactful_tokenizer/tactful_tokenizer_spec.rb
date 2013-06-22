@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 require 'spec_helper'
 
 describe String do
@@ -19,6 +20,10 @@ describe String do
     it "should be true" do
       "some text".is_alphabetic?.should == true
     end
+
+    it "should be true for unicode text" do
+      "русский текст".is_alphabetic?.should == true
+    end    
   end
 end
 

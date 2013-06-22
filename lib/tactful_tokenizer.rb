@@ -32,7 +32,7 @@ module TactfulTokenizer
 
     # Simple regex to check if a string is alphabetic.
     def is_alphabetic?
-      !/[\p{Word}\d]/u.match(self).nil?
+      !/[\p{L}\p{Space}]+/u.match(self).nil?
     end
 
     # Check for upper case.
@@ -195,7 +195,7 @@ module TactfulTokenizer
       @cleaned = String.new(s)
       tokenize(@cleaned)
       @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
-      @cleaned.gsub!(/[^\p{Word}\d\s,!?.;:<>\-'\/$% ]/u, '')
+      @cleaned.gsub!(/[^\p{L}\d\p{Space},!?.;:<>\-'\/$% ]/u, '')
       @cleaned.gsub!('--', ' ')
       @cleaned = @cleaned.split
     end

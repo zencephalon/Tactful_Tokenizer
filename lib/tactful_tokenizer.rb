@@ -17,7 +17,6 @@
 # Author:: Matthew Bunday (mailto:mkbunday@gmail.com)
 # License:: GNU General Public License v3
 # -*- encoding : utf-8 -*-
-require "word_tokenizer.rb"
 include WordTokenizer
 
 #--
@@ -32,14 +31,14 @@ module TactfulTokenizer
 
         # Simple regex to check if a string is alphabetic.
         def is_alphabetic?
-            return /[\p{Word}\d]/u.match(self)
+            !/[\p{Word}\d]/u.match(self).nil?
         end
 
         # Check for upper case.
         # Surprisingly, this is faster than a regex in benchmarks.
         # Using the trinary operator is faster than to_s
         def is_upper_case?
-            self == self.upcase ? 'true' : 'false'
+            self == self.upcase
         end
     end
 

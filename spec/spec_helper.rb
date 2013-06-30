@@ -3,3 +3,5 @@ $:.unshift File.expand_path('../../lib', __FILE__)
 
 require 'rspec'
 require 'tactful_tokenizer'
+require 'coveralls'
+Coveralls.wear!

@@ -8,7 +8,7 @@ Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.authors     = [""]
   s.email       = [""]
-  s.homepage    = ""
+  s.homepage    = "http://github.com/zencephalon/Tactful_Tokenizer"
   s.summary     = %q{Summary}
   s.description = %q{Desc}
 

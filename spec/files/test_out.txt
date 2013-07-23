@@ -92,3 +92,8 @@ It was replay of the scene from last year when David Wells pitched the only othe
 The Seattle Mariners on Sunday announced they signed high school catcher Ryan Christianson, their first-round pick and the 11th overall selection in last month's baseball draft.
 Christianson, 18, from Arlington High School in Riverside, Calif., will report to the Mariners' rookie league team in Peoria, Ariz.
 If he plays well there, he could be elevated to Class A Everett of the Northwest League in ``a couple of weeks,'' said Frank Mattox, the team's director of scouting.
+Добавим немного русского текста, чтобы проверить, верно ли все работает.
+Еще одно предложение.
+Работай!
+Будешь?
+Нет?

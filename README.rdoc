@@ -1,5 +1,10 @@
 = TactfulTokenizer
 
+{<img src="https://badge.fury.io/rb/tactful_tokenizer.png" alt="Gem Version" />}[http://badge.fury.io/rb/tactful_tokenizer]
+{<img src="https://travis-ci.org/zencephalon/Tactful_Tokenizer.png?branch=master" alt="Build Status" />}[https://travis-ci.org/zencephalon/Tactful_Tokenizer]
+{<img src="https://codeclimate.com/github/zencephalon/Tactful_Tokenizer.png" />}[https://codeclimate.com/github/zencephalon/Tactful_Tokenizer]
+{<img src="https://coveralls.io/repos/zencephalon/Tactful_Tokenizer/badge.png" alt="Coverage Status" />}[https://coveralls.io/r/zencephalon/Tactful_Tokenizer]
+
 TactfulTokenizer is a Ruby library for high quality sentence
 tokenization. It uses a Naive Bayesian statistical model, and
 is based on Splitta[http://code.google.com/p/splitta/], but 

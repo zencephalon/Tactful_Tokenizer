@@ -32,7 +32,7 @@ module TactfulTokenizer
 
     # Simple regex to check if a string is alphabetic.
     def is_alphabetic?
-      !/[\p{L}\p{Space}]+/u.match(self).nil?
+      !/[[:lower:][:upper:][:space:]]+/u.match(self).nil?
     end
 
     # Check for upper case.
@@ -116,7 +116,7 @@ module TactfulTokenizer
         end
 
         if w2.chop.is_alphabetic?
-          frag.features.push "w2cap_#{w2[0,1].chr.is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
+          frag.features.push "w2cap_#{w2[0,1].is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
         end
       end
     end
@@ -140,7 +140,7 @@ module TactfulTokenizer
       res = nil
       text.each_line do |line|
         unless line.strip.empty?
-          line.split(/(.*?[.!?](?:["')\]}]|(?:<.*>))*[\s])/).each do |res|
+          line.split(/(.*?[.!?](?:["')\]}]|(?:<.*>))*[[:space:]])/u).each do |res|
             unless res.strip.empty?
               frag = Frag.new(res)
               @frags.last.next = frag.cleaned.first unless @frags.empty?
@@ -195,7 +195,7 @@ module TactfulTokenizer
       @cleaned = String.new(s)
       tokenize(@cleaned)
       @cleaned.gsub!(/[.,\d]*\d/, '<NUM>')
-      @cleaned.gsub!(/[^\p{L}\d\p{Space},!?.;:<>\-'\/$% ]/u, '')
+      @cleaned.gsub!(/[^[[:upper:][:lower:]]\d[:space:],!?.;:<>\-'\/$% ]/u, '')
       @cleaned.gsub!('--', ' ')
       @cleaned = @cleaned.split
     end

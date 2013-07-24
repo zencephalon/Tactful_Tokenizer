@@ -22,7 +22,7 @@ describe String do
     end
 
     it "should be true for unicode text" do
-      "русский текст".is_alphabetic?.should == true
+      "русский текст öö üüü".is_alphabetic?.should == true
     end    
   end
 end

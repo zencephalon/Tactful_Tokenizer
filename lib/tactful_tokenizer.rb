@@ -110,7 +110,7 @@ module TactfulTokenizer
 
       frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
-      if not w2.empty?
+      unless w2.empty?
         if w1.chop.is_alphabetic? 
           frag.features.push "w1length_#{[10, w1.length].min}", "w1abbr_#{model.non_abbrs[w1.chop]}"
         end
@@ -160,7 +160,7 @@ module TactfulTokenizer
       frag = nil
       @frags.each do |frag|
         sent.push(frag.orig)
-        if frag.pred > thresh
+        if frag.pred && frag.pred > thresh
           break if frag.orig.nil?
           sents.push(sent.join('').strip)
           sent = []

@@ -111,13 +111,8 @@ module TactfulTokenizer
       frag.features = ["w1_#{w1}", "w2_#{w2}", "both_#{w1}_#{w2}"]
 
       unless w2.empty?
-        if w1.chop.is_alphabetic? 
-          frag.features.push "w1length_#{[10, w1.length].min}", "w1abbr_#{model.non_abbrs[w1.chop]}"
-        end
-
-        if w2.chop.is_alphabetic?
-          frag.features.push "w2cap_#{w2[0,1].is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
-        end
+        frag.push_w1_features(w1, model)
+        frag.push_w2_features(w2, model)
       end
     end
   end
@@ -198,6 +193,18 @@ module TactfulTokenizer
       @cleaned.gsub!(/[^[[:upper:][:lower:]]\d[:space:],!?.;:<>\-'\/$% ]/u, '')
       @cleaned.gsub!('--', ' ')
       @cleaned = @cleaned.split
+    end
+
+    def push_w1_features w1, model
+      if w1.chop.is_alphabetic? 
+        features.push "w1length_#{[10, w1.length].min}", "w1abbr_#{model.non_abbrs[w1.chop]}"
+      end
+    end
+
+    def push_w2_features w2, model
+      if w2.chop.is_alphabetic?
+        features.push "w2cap_#{w2[0,1].is_upper_case?}", "w2lower_#{model.lower_words[w2.downcase]}"
+      end
     end
   end
 end

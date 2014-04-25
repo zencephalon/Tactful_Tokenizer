@@ -6,11 +6,12 @@ Gem::Specification.new do |s|
   s.name        = "tactful_tokenizer"
   s.version     = TactfulTokenizer::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = [""]
-  s.email       = [""]
+  s.authors     = ["Matthew Bunday", "Sergey Kishenin"]
+  s.email       = ["mkbunday@gmail.com"]
   s.homepage    = "http://github.com/zencephalon/Tactful_Tokenizer"
-  s.summary     = %q{Summary}
-  s.description = %q{Desc}
+  s.summary     = "High accuracy sentence tokenization for Ruby."
+  s.description = "TactfulTokenizer uses a naive bayesian model train on the Brown and WSJ corpuses to provide high quality sentence tokenization."
+  s.license     = "GPL-3"
 
   s.rubyforge_project = "tactful_tokenizer"
 
@@ -19,6 +20,6 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
-  s.add_development_dependency "rspec"
-  s.add_development_dependency "rake"
+  s.add_development_dependency "rspec", "~> 0"
+  s.add_development_dependency "rake", "~> 0"
 end

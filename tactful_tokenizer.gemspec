@@ -20,6 +20,6 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ["lib"]
 
-  s.add_development_dependency "rspec", "~> 0"
-  s.add_development_dependency "rake", "~> 0"
+  s.add_development_dependency "rspec", "~> 2.14.1"
+  s.add_development_dependency "rake", "~> 10.3.1"
 end

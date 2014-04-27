@@ -2,7 +2,7 @@
 module WordTokenizer
   @@tokenize_regexps = [
     # Uniform Quotes
-    [/''|``/, '"'],
+    [/''|``|“|”/, '"'],
 
     # Separate punctuation (except for periods) from words.
     [/(^|[:space:])(')/u, '\1\2'],

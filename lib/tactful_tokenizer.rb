@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # TactfulTokenizer is a Ruby library for high quality sentence
 # tokenization. It uses a Naive Bayesian statistical model, and
 # is based on Splitta[http://code.google.com/p/splitta/]. But 
@@ -135,7 +136,7 @@ module TactfulTokenizer
       res = nil
       text.each_line do |line|
         unless line.strip.empty?
-          line.split(/(.*?[.!?](?:["')\]}]|(?:<.*>))*[[:space:]])/u).each do |res|
+          line.split(/(.*?[.!?](?:[”"')\]}]|(?:<.*>))*[[:space:]])/u).each do |res|
             unless res.strip.empty?
               frag = Frag.new(res)
               @frags.last.next = frag.cleaned.first unless @frags.empty?

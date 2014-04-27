@@ -1,3 +1,4 @@
+# -*- encoding : utf-8 -*-
 # TactfulTokenizer is a Ruby library for high quality sentence
 # tokenization. It uses a Naive Bayesian statistical model, and
 # is based on Splitta[http://code.google.com/p/splitta/]. But 

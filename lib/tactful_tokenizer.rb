@@ -135,7 +135,7 @@ module TactfulTokenizer
       res = nil
       text.each_line do |line|
         unless line.strip.empty?
-          line.split(/(.*?[.!?](?:["')\]}]|(?:<.*>))*[[:space:]])/u).each do |res|
+          line.split(/(.*?[.!?](?:[”"')\]}]|(?:<.*>))*[[:space:]])/u).each do |res|
             unless res.strip.empty?
               frag = Frag.new(res)
               @frags.last.next = frag.cleaned.first unless @frags.empty?
